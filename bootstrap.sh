@@ -37,22 +37,21 @@ else
     cd $endpath && git pull
 fi
 
-
-echo "To the High Seeea-links"
-lnif $endpath/gitconfig $HOME/.gitconfig
-lnif $endpath/inputrc $HOME/.inputrc
-if [ ! -d $endpath/vim/bundle ]; then
-    mkdir -p $endpath/vim/bundle
-fi
-
 if [ ! -d $endpath/pirate-vim ]; then
     mkdir -p $endpath/pirate-vim
 	echo "You can't swim without vim"
     git clone git@github.com:vito-c/pirate-vim.git $endpath/pirate-vim
 fi
 
+if [ ! -d $endpath/vim/bundle ]; then
+    mkdir -p $endpath/vim/bundle
+fi
+
+echo "To the High Seeea-links"
+lnif $endpath/gitconfig $HOME/.gitconfig
+lnif $endpath/inputrc $HOME/.inputrc
 # vim links
-lnif $endpath/vim $HOME/.vim
+lnif $endpath/pirate-vim $HOME/.vim
 lnif $endpath/pirate-vim/vimrc.bundles $HOME/.vimrc.bundles
 lnif $endpath/pirate-vim/vimrc $HOME/.vimrc
 
@@ -64,5 +63,5 @@ fi
 echo "bundles of vundles"
 system_shell=$SHELL
 export SHELL="/bin/sh"
-vim -u $endpath/vimrc.bundles +BundleInstall! +BundleClean +qall
+vim -u $endpath/pirate-vim/vimrc.bundles +BundleInstall! +BundleClean +qall
 export SHELL=$system_shell
