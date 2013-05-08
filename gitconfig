@@ -1,0 +1,49 @@
+[user]
+	name = GodFather
+	email = vcutten@zynga.com
+[core]
+	autocrlf = input
+	ignorecase = false
+	editor = /usr/local/bin/vim
+[alias]
+	mc = !git status -s | grep '^UU' | awk '{print $2}'
+	st = status -sb
+	ci = commit -a
+	ur = !git status -s | grep '^UU' | awk '{print $2}'
+	mod = !git status -s | grep '^ M' | awk '{print $2}'
+	cp = cherry-pick
+	co = checkout
+	todo = grep --heading --break --ignore-case -e ' FIX: *' -e ' TODO: *'
+	in = !/Users/vcutten/workrepos/farmville-main/util/git/incoming.sh
+	out = !git show --name-only origin/$1..$1
+	lol = log --graph --decorate --pretty=oneline --abbrev-commit
+	#out = !git show --name-only origin/$1..$1
+	#out = !git rev-parse origin/$1..$1
+	#out = !/Users/vcutten/workrepos/farmville2-main/util/git/outgoing.sh
+	rev = !git show --name-status $1
+	dt = difftool
+	d = !git --no-pager diff
+	dw = !git --no-pager diff --word-diff
+	l = !git log --oneline --decorate
+	log = !git --no-pager log
+	#git d experimental-loc:Client/Game/rules.mk exp-loc:Client/Game/rules.mk
+	#rev = !git show --pretty="format:" --name-only
+	restore = !git checkout $(git rev-list -n 1 HEAD -- "$1")^ -- "$1"
+[color]
+	ui = true
+[merge]
+	tool = vimdiff
+[mergetool]
+	keepBackup = false
+[push]
+	default = tracking
+[diff]
+	tool = vimdiff
+[difftool]
+	prompt = true
+[init]
+	templatedir = ~/.git_template
+[hub]
+	host = github-ca.corp.zynga.com
+[github]
+	user = vito-c

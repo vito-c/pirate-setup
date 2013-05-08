@@ -1,0 +1,7 @@
+#!/usr/local/bin/bash
+
+# BIN=$(echo "obase=2; ibase=16; $j" | bc )
+# echo $BIN
+len=$( echo ${#1} )
+bytes=$(( $len/2 ))
+for i = 0; i < $len

@@ -1,0 +1,12 @@
+#!/usr/local/bin/bash
+set -e
+PATH="/usr/local/bin:$PATH"
+trap "rm -f .git/tags.$$" EXIT
+ctags --tag-relative -Rf.git/tags.$$ --exclude=.git --languages=-javascript,sql
+mv .git/tags.$$ .git/tags
+
+SOURCES="$(pwd)"
+FILETYPES=\*.cs
+rm -f .git/cscope.out
+find "$SOURCES" -name "$FILETYPES" -exec cscope -b {} +
+mv cscope.out .git/cscope.out
