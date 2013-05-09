@@ -11,6 +11,9 @@ bind '\C-Space':complete
 bind '\C-i':menu-complete
 bind '"\ew": backward-kill-word'
 
+# Override defaults
+HISTSIZE=1500
+
 #export SCALA_HOME=/Users/vcutten/workrepos/apparat/scala-2.8.2.final
 #export PYTHONPATH=/usr/lib/python2.6/site-packages
 
@@ -36,7 +39,7 @@ unalias ls 2>/dev/null
 if [[ $(uname) =~ Darwin ]]; then
 	# export FLEX_HOME="/usr/local/bin/flexsdks/4.6.0.23201B"
 	# export PAGER=vimpager
-	source ~/.pirate-vim/secrets
+	source ~/.pirate-setup/secrets
 	export FLEX_HOME="/usr/local/bin/flexsdks/4.6.0.23201Bair3.5"
 	export vimdir=$HOME/.vim
 	export EDITOR=/Applications/MacVim.app/Contents/MacOS/Vim
@@ -50,10 +53,12 @@ if [[ $(uname) =~ Darwin ]]; then
 		export HOSTSTUB=$HOSTNAME;
 	fi
 	export JAVA_HOME=$(/usr/libexec/java_home)
-	if [ -f `brew --prefix`/etc/bash_completion ]; then
-		. `brew --prefix`/etc/bash_completion
+
+	if [ -f $(brew --prefix)/share/bash-completion/bash_completion ]; then
+		. $(brew --prefix)/share/bash-completion/bash_completion
 	fi
-	vbp() { vim $@ ~/.pirate-vim/bashrc; }
+
+	vbp() { vim $@ ~/.pirate-setup/bashrc; }
 	cbp() { source ~/.bashrc; }
 	ls() { command ls -G "$@"; }
 	fn() { command find . -iname "$@"; }
