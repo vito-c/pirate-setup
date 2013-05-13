@@ -76,6 +76,7 @@ if [[ $(uname) =~ Darwin ]]; then
 	ll() { command ls -lGh "$@"; }
 	la() { command ls -lGha "$@"; }
 	vimdiff() { command vim -d "$@"; }
+	vif() { command vim $(ff "$@"); }
 else
 	export FLEX_HOME="/var/lib/flexsdks/4.6.0.23201B"
 	export HOSTSTUB=$(regex='.*([A-Za-z]{3}-[0-9][0-9]).*'; [[ "$HOSTNAME" =~ $regex ]] && echo "${BASH_REMATCH[1]}");
@@ -344,7 +345,7 @@ showAll(){
 	killall Finder
 }
 nonunicode(){
-    grep --color='always' -Prn "[\x80-\xFF]" $1
+    grep --color='auto' -Prn "[\x80-\xFF]" $1
 }
 
 brobot-jira(){
