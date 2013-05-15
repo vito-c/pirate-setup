@@ -12,7 +12,8 @@ bind '\C-i':menu-complete
 bind '"\ew": backward-kill-word'
 
 # Override defaults
-HISTSIZE=1500
+export HISTSIZE=1500
+export HISTCONTROL=erasedups
 
 #export SCALA_HOME=/Users/vcutten/workrepos/apparat/scala-2.8.2.final
 #export PYTHONPATH=/usr/lib/python2.6/site-packages
