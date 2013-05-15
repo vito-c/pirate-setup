@@ -70,7 +70,11 @@ if [[ $(uname) =~ Darwin ]]; then
 			type='*.'"$2";
 		fi
 		#echo "root: $1  stem: $type"
-		find . \( -name .\*~ -o -name \*.meta -prune \) -o -iname "$1""$type" -print; 
+		if [[ "$3" == "" ]]; then 
+			find . \( -name .\*~ -o -name \*.meta -prune \) -o -iname "$1""$type" -print; 
+		else
+			find "$3" \( -name .\*~ -o -name \*.meta -prune \) -o -iname "$1""$type" -print; 
+		fi
 	}
 	grep() { command grep --color=auto "$@"; }
 	ll() { command ls -lGh "$@"; }
