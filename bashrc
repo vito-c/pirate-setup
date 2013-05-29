@@ -99,7 +99,7 @@ fi
 export FCSH=$FLEX_HOME/bin/fcsh
 export PLAN9=/usr/local/plan9
 PATH=$PATH:$PLAN9/bin
-export PATH="/usr/local/bin:/usr/local/bin/bash:/usr/sbin/user:~/.pirate-vim/bin:$FLEX_HOME/bin:$PATH:$PLAN9/bin"
+export PATH="/usr/local/bin:/usr/local/bin/bash:/usr/sbin/user:~/.pirate-vim/bin:$FLEX_HOME/bin:$PATH:$PLAN9/bin:/usr/local/share/npm/bin:/usr/local/Cellar/node/0.10.7/lib/node_modules/npm/bin/node-gyp-bin"
 #export HOSTSTUB=$(hostStub);                                                                                      
 export PS1="\[\e[36;1m\][\A] \[\e[0;35m\]$HOSTSTUB \[\e[31;1m\]\w> \[\e[0m\]"                                     
 export PS2="\[\e[31;1m\]> \[\e[0m\]"                                                                              
@@ -107,6 +107,27 @@ export PS2="\[\e[31;1m\]> \[\e[0m\]"
 if [ -f /usr/local/git/contrib/completion/git-completion.bash ]; then
 	. /usr/local/git/contrib/completion/git-completion.bash
 fi
+
+#####################################################
+# Navigation commands
+####################################################
+
+# Find Directory there are going to be named short cuts here
+# $1 = sub dir to find ?
+# repo traverse up to either home dir or repo git repo dir
+fd()
+{
+	case "$1" in
+		'repo')
+			startdir=$PWD;
+			while [[ $PWD != $HOME && $(ls -a | grep '^.git$') != '.git' ]]; do cd ..; done;
+			enddir=$PWD;
+			cd $startdir;
+			cd $enddir;
+		;;
+	esac
+}
+
 rename()
 {
 	find -E . -regex '\./[0-9]..*' -exec bash -c 'name=${1##*/}; mv "$name" "${name:2}";' _ {} \;
@@ -146,7 +167,7 @@ git-branch-diff()
 
 yumdiff()
 {
-	vimdiff <(ssf1 'yum list installed') <(ssf2 'yum list installed')
+	vimdiff <($1 'yum list installed') <($2 'yum list installed')
 }
 
 badassets()
@@ -256,6 +277,7 @@ ssl1(){ echo -e "\033];fslave-01\007"; ssh ${AWESOMEVILLE}-build-slave01.zc1.zyn
 ssl2(){ echo -e "\033];fslave-02\007"; ssh ${AWESOMEVILLE}-build-slave02.zc1.zynga.com $@; }   
 ssl3(){ echo -e "\033];fslave-03\007"; ssh ${AWESOMEVILLE}-build-slave03.zc1.zynga.com $@; }   
 ssm(){ echo -e "\033];fmaster\007"; ssh ${AWESOMEVILLE}-build-master.zc1.zynga.com $@; }   
+ssb(){ echo -e "\033];brobot\007"; ssh farm-brobot $@; }   
 ssvt(){ ssh vcutten@vito-tower.local $@; }
 ssdt(){ ssh redhand@destro-tower.local $@; }
 ssmb(){ ssh vcutten@vito-mbp.local $@; }
