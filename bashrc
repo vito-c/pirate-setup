@@ -120,7 +120,7 @@ fd()
 	case "$1" in
 		'repo')
 			startdir=$PWD;
-			while [[ $PWD != $HOME && $(ls -a | grep '^.git$') != '.git' ]]; do cd ..; done;
+			while [[ $PWD != $HOME && $(ls -a | grep '^.git$') != '.git' && $PWD != / ]]; do cd ..; done;
 			enddir=$PWD;
 			cd $startdir;
 			cd $enddir;
