@@ -82,6 +82,9 @@ if [[ $(uname) =~ Darwin ]]; then
 	la() { command ls -lGha "$@"; }
 	vimdiff() { command vim -d "$@"; }
 	vif() { command vim $(ff "$@"); }
+	setProfile() {
+		echo -e "\033]50;SetProfile=$1\a"
+	}  
 else
 	export FLEX_HOME="/var/lib/flexsdks/4.6.0.23201B"
 	export HOSTSTUB=$(regex='.*([A-Za-z]{3}-[0-9][0-9]).*'; [[ "$HOSTNAME" =~ $regex ]] && echo "${BASH_REMATCH[1]}");
