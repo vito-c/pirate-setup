@@ -14,6 +14,7 @@ bind '"\ew": backward-kill-word'
 # Override defaults
 export HISTSIZE=1500
 export HISTCONTROL=erasedups
+export PROMPT_COMMAND='history -a; history -r'
 
 #export SCALA_HOME=/Users/vcutten/workrepos/apparat/scala-2.8.2.final
 #export PYTHONPATH=/usr/lib/python2.6/site-packages
@@ -89,6 +90,9 @@ if [[ $(uname) =~ Darwin ]]; then
 			command vim $(ff "$@" );
 		fi
 	}
+	setProfile() {
+		echo -e "\033]50;SetProfile=$1\a"
+	}  
 else
 	export FLEX_HOME="/var/lib/flexsdks/4.6.0.23201B"
 	export HOSTSTUB=$(regex='.*([A-Za-z]{3}-[0-9][0-9]).*'; [[ "$HOSTNAME" =~ $regex ]] && echo "${BASH_REMATCH[1]}");
