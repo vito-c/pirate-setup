@@ -59,7 +59,8 @@ if [[ $(uname) =~ Darwin ]]; then
 		. $(brew --prefix)/share/bash-completion/bash_completion
 	fi
 
-	vbp() { vim $@ ~/.pirate-setup/bashrc; }
+	vb() { vim $@ ~/.pirate-setup/bashrc; }
+	vv() { vim $@ ~/.pirate-setup/pirate-vim/vimrc; }
 	cbp() { source ~/.bashrc; }
 	ls() { command ls -G "$@"; }
 	fn() { command find . -iname "$@"; }
@@ -81,14 +82,20 @@ if [[ $(uname) =~ Darwin ]]; then
 	ll() { command ls -lGh "$@"; }
 	la() { command ls -lGha "$@"; }
 	vimdiff() { command vim -d "$@"; }
-	vif() { command vim $(ff "$@"); }
+	vif() { 
+		if [[ "$2" == "" || "$2" == "*.cs" ]]; then 
+			command vim --servername UNITY --remote-silent $(ff "$@"); 
+		else
+			command vim $(ff "$@" );
+		fi
+	}
 else
 	export FLEX_HOME="/var/lib/flexsdks/4.6.0.23201B"
 	export HOSTSTUB=$(regex='.*([A-Za-z]{3}-[0-9][0-9]).*'; [[ "$HOSTNAME" =~ $regex ]] && echo "${BASH_REMATCH[1]}");
 	if [[ $HOSTSTUB == "" ]]; then
     	export HOSTSTUB=$(hostname -s);
 	fi
-	vbp() { vim $@ ~/.bash_awesome; }
+	vb() { vim $@ ~/.bash_awesome; }
 	cbp() { source ~/.bash_awesome; }
 	ls() { command ls --color=always "$@"; }
 	grep() { command grep --color=always "$@"; }
