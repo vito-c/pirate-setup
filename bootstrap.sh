@@ -60,6 +60,9 @@ if [ ! -e $HOME/.vim/bundle/vundle ]; then
     git clone http://github.com/gmarik/vundle.git $HOME/.vim/bundle/vundle
 fi
 
+ln -s ~/.pirate-setup/VimLauncher.app ~/Documents/VimLauncher.app
+ln -s ~/.pirate-setup/VimLauncher.app /Applications/VimLauncher.app
+
 echo "bundles of vundles"
 system_shell=$SHELL
 export SHELL="/bin/sh"
