@@ -14,6 +14,7 @@ bind '"\ew": backward-kill-word'
 # Override defaults
 export HISTSIZE=1500
 export HISTCONTROL=erasedups
+export PROMPT_COMMAND='history -a; history -r'
 
 #export SCALA_HOME=/Users/vcutten/workrepos/apparat/scala-2.8.2.final
 #export PYTHONPATH=/usr/lib/python2.6/site-packages
