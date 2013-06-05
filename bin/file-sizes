@@ -1,0 +1,44 @@
+#!/usr/local/bin/bash
+
+usage(){
+	echo "-h displays this help"
+	echo "-p the to the json files ie: 'assets/**/*.json'"
+	echo "-r regex matching the image extensions ie: '.*\.jxr|.*\.f3d'"
+	echo "-a asset loctaion ie: assets"
+	echo "Needs to be run from repo root for now"
+	exit 0
+}
+
+findSizes(){
+	find $1 \( -type d -name $2 \) -prune -o -type f -exec du {} + | 
+	awk -v hum=$human '{ 
+		n = sprintf( "%1.0e\n", $1 ) 
+		if( hum == "true" )
+			n = n*512
+		printf "size %10d\n", n 
+	}' | sort | uniq -c
+}
+
+path=/Users/vcutten/workrepos/farm/assets
+exclude=data
+human=true
+
+while getopts "h?p:r:e:" option; do
+	case "${option}" in 
+		h|\?) 
+			usage
+			exit 0
+			;;
+		r)	round="${OPTARG}"
+			;;
+		h)  human="${OPTARG}"
+			;;
+		e)	exclude="${OPTARG}"
+			;;
+		p)	path="${OPTARG}"
+			;;
+	esac
+done
+echo "------------------------------"
+findSizes "$path" "$exclude"
+

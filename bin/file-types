@@ -1,0 +1,3 @@
+#!/usr/local/bin/bash
+shopt -s globstar
+find . -name '*' | sed -E 's|\./[^\.]*||g' | sed '/^$/d' | sort | uniq -c

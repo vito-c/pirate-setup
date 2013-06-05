@@ -87,7 +87,7 @@ if [[ $(uname) =~ Darwin ]]; then
 
 	vb() { vim $@ ~/.pirate-setup/bashrc; }
 	vv() { vim $@ ~/.pirate-setup/pirate-vim/vimrc; }
-	cbp() { source ~/.bashrc; }
+	cb() { source ~/.bashrc; }
 	ls() { command ls -G "$@"; }
 	fn() { command find . -iname "$@"; }
 	ff() { 
@@ -125,7 +125,7 @@ else
     	export HOSTSTUB=$(hostname -s);
 	fi
 	vb() { vim $@ ~/.bash_awesome; }
-	cbp() { source ~/.bash_awesome; }
+	cb() { source ~/.bash_awesome; }
 	ls() { command ls --color=always "$@"; }
 	grep() { command grep --color=always "$@"; }
 	ll() { command ls --color=always -lh "$@"; }
@@ -135,7 +135,7 @@ fi
 export FCSH=$FLEX_HOME/bin/fcsh
 export PLAN9=/usr/local/plan9
 PATH=$PATH:$PLAN9/bin
-export PATH="/usr/local/bin:/usr/local/bin/bash:/usr/sbin/user:~/.pirate-vim/bin:$FLEX_HOME/bin:$PATH:$PLAN9/bin:/usr/local/share/npm/bin:/usr/local/Cellar/node/0.10.7/lib/node_modules/npm/bin/node-gyp-bin"
+export PATH="/usr/local/bin:/usr/local/bin/bash:/usr/sbin/user:~/.pirate-setup/bin:$FLEX_HOME/bin:$PATH:$PLAN9/bin:/usr/local/share/npm/bin:/usr/local/Cellar/node/0.10.7/lib/node_modules/npm/bin/node-gyp-bin"
 #export HOSTSTUB=$(hostStub);                                                                                      
 export PS1="\[\e[36;1m\][\A] \[\e[0;35m\]$HOSTSTUB \[\e[31;1m\]\w> \[\e[0m\]"                                     
 export PS2="\[\e[31;1m\]> \[\e[0m\]"                                                                              
