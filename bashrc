@@ -13,8 +13,11 @@ bind '"\ew": backward-kill-word'
 
 # Override defaults
 export HISTSIZE=1500
-export HISTCONTROL=erasedups
+export HISTCONTROL=ignoredups:erasedups
+shopt -s histappend
 export PROMPT_COMMAND='history -a; history -r'
+export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
+
 
 #export SCALA_HOME=/Users/vcutten/workrepos/apparat/scala-2.8.2.final
 #export PYTHONPATH=/usr/lib/python2.6/site-packages
@@ -56,12 +59,35 @@ if [[ $(uname) =~ Darwin ]]; then
 	fi
 	export JAVA_HOME=$(/usr/libexec/java_home)
 
-	if [ -f $(brew --prefix)/share/bash-completion/bash_completion ]; then
-		. $(brew --prefix)/share/bash-completion/bash_completion
+	if [[ -f `brew --prefix`/share/bash-completion/bash_completion ]]; then
+		source `brew --prefix`/share/bash-completion/bash_completion;
 	fi
 
-	vbp() { vim $@ ~/.pirate-setup/bashrc; }
-	cbp() { source ~/.bashrc; }
+	omnisharp() {
+		if [[ "$1" == "" ]]; then 
+			slnloc=~/workrepos/mobile/FarmMobile/FarmMobile.sln;
+		else
+			slnloc="$1";
+		fi
+
+		omnisev=~/.pirate-setup/pirate-vim/bundle/Omnisharp/server;
+		omnidir=$omnisev/OmniSharp/bin/Debug;
+
+		if [[ -f $omnidir/OmniSharp.exe ]]; then
+			mono $omnidir/OmniSharp.exe -s "$slnloc" "$@" > $omnidir/server.log 2>&1 & omnipid=$!;
+		elif [[ -f $omnisev/OmniSharp.sln ]]; then
+			xbuild $omnisev/OmniSharp.sln;
+			mono $omnidir/OmniSharp.exe -s "$slnloc" "$@" > $omnidir/server.log 2>&1 & omnipid=$!;
+		else
+			echo "Unable to find Omnisharp";
+		fi
+	}
+
+		
+
+	vb() { vim $@ ~/.pirate-setup/bashrc; }
+	vv() { vim $@ ~/.pirate-setup/pirate-vim/vimrc; }
+	cb() { source ~/.bashrc; }
 	ls() { command ls -G "$@"; }
 	fn() { command find . -iname "$@"; }
 	ff() { 
@@ -82,7 +108,13 @@ if [[ $(uname) =~ Darwin ]]; then
 	ll() { command ls -lGh "$@"; }
 	la() { command ls -lGha "$@"; }
 	vimdiff() { command vim -d "$@"; }
-	vif() { command vim $(ff "$@"); }
+	vif() { 
+		if [[ "$2" == "" || "$2" == "*.cs" ]]; then 
+			command vim --servername UNITY --remote-silent $(ff "$@"); 
+		else
+			command vim $(ff "$@" );
+		fi
+	}
 	setProfile() {
 		echo -e "\033]50;SetProfile=$1\a"
 	}  
@@ -92,8 +124,8 @@ else
 	if [[ $HOSTSTUB == "" ]]; then
     	export HOSTSTUB=$(hostname -s);
 	fi
-	vbp() { vim $@ ~/.bash_awesome; }
-	cbp() { source ~/.bash_awesome; }
+	vb() { vim $@ ~/.bash_awesome; }
+	cb() { source ~/.bash_awesome; }
 	ls() { command ls --color=always "$@"; }
 	grep() { command grep --color=always "$@"; }
 	ll() { command ls --color=always -lh "$@"; }
@@ -103,7 +135,7 @@ fi
 export FCSH=$FLEX_HOME/bin/fcsh
 export PLAN9=/usr/local/plan9
 PATH=$PATH:$PLAN9/bin
-export PATH="/usr/local/bin:/usr/local/bin/bash:/usr/sbin/user:~/.pirate-vim/bin:$FLEX_HOME/bin:$PATH:$PLAN9/bin:/usr/local/share/npm/bin:/usr/local/Cellar/node/0.10.7/lib/node_modules/npm/bin/node-gyp-bin"
+export PATH="/usr/local/bin:/usr/local/bin/bash:/usr/sbin/user:~/.pirate-setup/bin:$FLEX_HOME/bin:$PATH:$PLAN9/bin:/usr/local/share/npm/bin:/usr/local/Cellar/node/0.10.7/lib/node_modules/npm/bin/node-gyp-bin"
 #export HOSTSTUB=$(hostStub);                                                                                      
 export PS1="\[\e[36;1m\][\A] \[\e[0;35m\]$HOSTSTUB \[\e[31;1m\]\w> \[\e[0m\]"                                     
 export PS2="\[\e[31;1m\]> \[\e[0m\]"                                                                              
@@ -209,7 +241,6 @@ badassets()
 shopt -s extglob
 shopt -s cdspell
 shopt -s nocaseglob
-shopt -s histappend
 shopt -u expand_aliases
 shopt -s globstar
 
@@ -313,6 +344,11 @@ openFlex()
 trcflash()
 {
 	tail -f "/Users/vcutten/Library/Preferences/Macromedia/Flash Player/Logs/flashlog.txt"
+}
+
+trcomni()
+{
+	tail -f "$@" "/Users/$USER/.pirate-setup/pirate-vim/bundle/Omnisharp/server/Omnisharp/bin/Debug/server.log"
 }
 
 trcunity()
