@@ -68,3 +68,4 @@ system_shell=$SHELL
 export SHELL="/bin/sh"
 vim -u $endpath/pirate-vim/vimrc.bundles +BundleInstall! +BundleClean +qall
 export SHELL=$system_shell
+ln -s ~/.pirate-setup/pirate-vim/cs ~/.pirate-setup/pirate-vim/bundle/YouCompleteMe/python/completers/cs
