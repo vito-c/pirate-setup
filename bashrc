@@ -451,6 +451,25 @@ brobot-test(){
 	curl -F body="$msg" $bot/put_message.php?toChat=Farm%202%20Robo%20Test
 }
 
+copy-job(){
+
+	JOB_NAME="$1"
+	PASS="$2"
+	SOURCE="http://vcutten:$PASS@ci.farm2mobile.zynga.com:8080"
+	DESTINATION="http://10.84.209.85:8080"
+	#Here is the job
+	curl -X GET "$SOURCE/job/$JOB_NAME/config.xml" -o tempconfig.xml
+
+	#Update the configuration via posting a local configuration file
+	#curl -X POST http://user:password@hudson.server.org/job/myjobname/config.xml --data-binary "@mymodifiedlocalconfig.xml"
+
+	#Creating a new job via posting a local configuration file
+	curl -X POST "$DESTINATION/createItem?name=$JOB_NAME" --data-binary "@tempconfig.xml" -H "Content-Type: text/xml"
+	
+	rm tempconfig.xml
+}
+
+
 getFBUser(){
 	name=
 	100003778250086
