@@ -15,7 +15,7 @@ bind '"\ew": backward-kill-word'
 export HISTSIZE=1500
 export HISTCONTROL=ignoredups:erasedups
 shopt -s histappend
-export PROMPT_COMMAND='history -a; history -r'
+#export PROMPT_COMMAND='history -a; history -r'
 export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
 
 
@@ -91,7 +91,6 @@ if [[ $(uname) =~ Darwin ]]; then
 	ls() { command ls -G "$@"; }
 	fn() { command find . -iname "$@"; }
 	ff() { 
-
 		if [[ "$2" == "" ]]; then 
 			type='*.cs';
 		else
@@ -107,6 +106,7 @@ if [[ $(uname) =~ Darwin ]]; then
 	grep() { command grep --color=auto "$@"; }
 	ll() { command ls -lGh "$@"; }
 	la() { command ls -lGha "$@"; }
+	# might be causing vim diff issues
 	vimdiff() { command vim -d "$@"; }
 	vif() { 
 		if [[ "$2" == "" || "$2" == "*.cs" ]]; then 
@@ -151,6 +151,11 @@ fi
 # Find Directory there are going to be named short cuts here
 # $1 = sub dir to find ?
 # repo traverse up to either home dir or repo git repo dir
+count-files()
+{
+	find . -type d \( -name util -o -name AirLauncher \) -prune -o -name \*.mk -exec bash -c 'echo $1 $(cat $1 | wc -l) ' _ {} \;
+}
+
 fd()
 {
 	case "$1" in
@@ -316,6 +321,17 @@ ssb(){ echo -e "\033];brobot\007"; ssh farm-brobot $@; }
 ssvt(){ ssh vcutten@vito-tower.local $@; }
 ssdt(){ ssh redhand@destro-tower.local $@; }
 ssmb(){ ssh vcutten@vito-mbp.local $@; }
+
+mini01(){ ssh z_farmville2_build@mobile-dbx-farm01 $@; }
+mini02(){ ssh z_farmville2_build@mobile-dbx-farm02 $@; }
+mini03(){ ssh z_farmville2_build@mobile-dbx-farm03 $@; }
+mini04(){ ssh z_farmville2_build@mobile-dbx-farm04 $@; }
+mini05(){ ssh z_farmville2_build@mbx-farm205-ca14769  $@; }
+mini06(){ ssh z_farmville2_build@mbx-farm206-ca14774  $@; }
+mini07(){ ssh z_farmville2_build@mbx-farm207-ca14757  $@; }
+mini08(){ ssh z_farmville2_build@mbx-farm208-ca14766  $@; }
+mini09(){ ssh z_farmville2_build@mbx-farm209-ca14735  $@; }
+
 ssfstage() { echo -e "\033];fstage\007"; ssh ${VILLE}-staging-zcon-01.zc2.zynga.com $@; }
 #farm2-staging-web-fb-22
 
