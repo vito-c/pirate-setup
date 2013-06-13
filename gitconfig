@@ -8,6 +8,7 @@
 [alias]
 	mc = !git status -s | grep '^UU' | awk '{print $2}'
 	st = status -sb
+	sup = submodule update
 	ci = commit -a
 	ur = !git status -s | grep '^UU' | awk '{print $2}'
 	mod = !git status -s | grep '^ M' | awk '{print $2}'

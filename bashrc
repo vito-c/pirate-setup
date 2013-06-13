@@ -387,7 +387,7 @@ listenPort(){
 }
 
 ldapquick(){
-    ldapsearch -x -h ds1.sv2.zynga.com -b  "dc=zynga,dc=com" "(memberUid=$1)" cn
+    ldapsearch -x -h ds1.ca2.zynga.com -b  "dc=zynga,dc=com" "(memberUid=$1)" cn
 }
 
 #############################################################################################################################
