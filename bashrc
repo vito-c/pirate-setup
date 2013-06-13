@@ -15,7 +15,7 @@ bind '"\ew": backward-kill-word'
 export HISTSIZE=1500
 export HISTCONTROL=ignoredups:erasedups
 shopt -s histappend
-export PROMPT_COMMAND='history -a; history -r'
+#export PROMPT_COMMAND='history -a; history -r'
 export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
 
 
@@ -87,11 +87,10 @@ if [[ $(uname) =~ Darwin ]]; then
 
 	vb() { vim $@ ~/.pirate-setup/bashrc; }
 	vv() { vim $@ ~/.pirate-setup/pirate-vim/vimrc; }
-	cbp() { source ~/.bashrc; }
+	cb() { source ~/.bashrc; }
 	ls() { command ls -G "$@"; }
 	fn() { command find . -iname "$@"; }
 	ff() { 
-
 		if [[ "$2" == "" ]]; then 
 			type='*.cs';
 		else
@@ -107,6 +106,7 @@ if [[ $(uname) =~ Darwin ]]; then
 	grep() { command grep --color=auto "$@"; }
 	ll() { command ls -lGh "$@"; }
 	la() { command ls -lGha "$@"; }
+	# might be causing vim diff issues
 	vimdiff() { command vim -d "$@"; }
 	vif() { 
 		if [[ "$2" == "" || "$2" == "*.cs" ]]; then 
@@ -125,7 +125,7 @@ else
     	export HOSTSTUB=$(hostname -s);
 	fi
 	vb() { vim $@ ~/.bash_awesome; }
-	cbp() { source ~/.bash_awesome; }
+	cb() { source ~/.bash_awesome; }
 	ls() { command ls --color=always "$@"; }
 	grep() { command grep --color=always "$@"; }
 	ll() { command ls --color=always -lh "$@"; }
@@ -135,7 +135,7 @@ fi
 export FCSH=$FLEX_HOME/bin/fcsh
 export PLAN9=/usr/local/plan9
 PATH=$PATH:$PLAN9/bin
-export PATH="/usr/local/bin:/usr/local/bin/bash:/usr/sbin/user:~/.pirate-vim/bin:$FLEX_HOME/bin:$PATH:$PLAN9/bin:/usr/local/share/npm/bin:/usr/local/Cellar/node/0.10.7/lib/node_modules/npm/bin/node-gyp-bin"
+export PATH="/usr/local/bin:/usr/local/bin/bash:/usr/sbin/user:~/.pirate-setup/bin:$FLEX_HOME/bin:$PATH:$PLAN9/bin:/usr/local/share/npm/bin:/usr/local/Cellar/node/0.10.7/lib/node_modules/npm/bin/node-gyp-bin"
 #export HOSTSTUB=$(hostStub);                                                                                      
 export PS1="\[\e[36;1m\][\A] \[\e[0;35m\]$HOSTSTUB \[\e[31;1m\]\w> \[\e[0m\]"                                     
 export PS2="\[\e[31;1m\]> \[\e[0m\]"                                                                              
@@ -151,6 +151,11 @@ fi
 # Find Directory there are going to be named short cuts here
 # $1 = sub dir to find ?
 # repo traverse up to either home dir or repo git repo dir
+count-files()
+{
+	find . -type d \( -name util -o -name AirLauncher \) -prune -o -name \*.mk -exec bash -c 'echo $1 $(cat $1 | wc -l) ' _ {} \;
+}
+
 fd()
 {
 	case "$1" in
@@ -316,6 +321,17 @@ ssb(){ echo -e "\033];brobot\007"; ssh farm-brobot $@; }
 ssvt(){ ssh vcutten@vito-tower.local $@; }
 ssdt(){ ssh redhand@destro-tower.local $@; }
 ssmb(){ ssh vcutten@vito-mbp.local $@; }
+
+mini01(){ ssh z_farmville2_build@mobile-dbx-farm01 $@; }
+mini02(){ ssh z_farmville2_build@mobile-dbx-farm02 $@; }
+mini03(){ ssh z_farmville2_build@mobile-dbx-farm03 $@; }
+mini04(){ ssh z_farmville2_build@mobile-dbx-farm04 $@; }
+mini05(){ ssh z_farmville2_build@mbx-farm205-ca14769  $@; }
+mini06(){ ssh z_farmville2_build@mbx-farm206-ca14774  $@; }
+mini07(){ ssh z_farmville2_build@mbx-farm207-ca14757  $@; }
+mini08(){ ssh z_farmville2_build@mbx-farm208-ca14766  $@; }
+mini09(){ ssh z_farmville2_build@mbx-farm209-ca14735  $@; }
+
 ssfstage() { echo -e "\033];fstage\007"; ssh ${VILLE}-staging-zcon-01.zc2.zynga.com $@; }
 #farm2-staging-web-fb-22
 
@@ -450,6 +466,25 @@ brobot-test(){
 	bot=http://skype.${AWESOMEVILLE}-dev-11.ec2.zynga.com/put_message.php
 	curl -F body="$msg" $bot/put_message.php?toChat=Farm%202%20Robo%20Test
 }
+
+copy-job(){
+
+	JOB_NAME="$1"
+	PASS="$2"
+	SOURCE="http://vcutten:$PASS@ci.farm2mobile.zynga.com:8080"
+	DESTINATION="http://10.84.209.85:8080"
+	#Here is the job
+	curl -X GET "$SOURCE/job/$JOB_NAME/config.xml" -o tempconfig.xml
+
+	#Update the configuration via posting a local configuration file
+	#curl -X POST http://user:password@hudson.server.org/job/myjobname/config.xml --data-binary "@mymodifiedlocalconfig.xml"
+
+	#Creating a new job via posting a local configuration file
+	curl -X POST "$DESTINATION/createItem?name=$JOB_NAME" --data-binary "@tempconfig.xml" -H "Content-Type: text/xml"
+	
+	rm tempconfig.xml
+}
+
 
 getFBUser(){
 	name=

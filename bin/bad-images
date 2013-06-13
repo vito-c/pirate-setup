@@ -1,0 +1,70 @@
+#!/usr/local/bin/bash
+
+# Requires bash 4.0+
+shopt -s globstar
+if [[ $? != 0 ]]; then
+	echo "Bash 4+ required"
+	exit 1
+fi
+
+path='assets/**/*.json'
+ext='jxr'
+adir='assets'
+
+usage(){
+	echo "-h displays this help"
+	echo "-p the to the json files ie: 'assets/**/*.json'"
+	echo "-r regex matching the image extensions ie: '.*\.jxr|.*\.f3d'"
+	echo "-a asset loctaion ie: assets"
+	echo "Needs to be run from repo root for now"
+	exit 0
+}
+
+#TODO make this sed better!
+#fix pathing so I can run this via vim?
+validate(){
+	count=$(grep -iErn $1 $2 | wc -l)
+	echo "Found $count references in the files"
+	filez=$(grep -inE $1 $2 | sed -E 's|(.*:).*"([^\"]*\.png).*|\1 \2|g' | sed -E "s/[ ,'\"]*//g" | sed 's/	//g' )
+	for line in $filez; do
+		json=$( echo $line | awk -F: '{print $1}')
+		lnum=$( echo $line | awk -F: '{print $2}')
+		img=$( echo $line | awk -F: '{print $4}')
+		img="$adir/$img"
+		
+		# if [[ ! $img =~ $pat ]]; then
+		# 	img=$( echo $line | awk -F: '{print $3}')
+		# 	img="$adir/$img"
+		# fi
+
+		if [[ ! -f $img ]]; then
+			fallback="$adir/$(echo $line | awk -F: '{print $3}')"
+			if [[ ! -f $fallback ]]; then
+				pat=${ext#.\\}
+				if [[ $img =~ $pat ]]; then
+					echo -e "file: \e[00;36m$json\e[00m   img: \e[00;31m$img\e[00m	line: \e[00;32m$lnum\e[00m";
+				else
+					echo -e "file: \e[00;36m$json\e[00m   img: \e[00;31m$fallback\e[00m	line: \e[00;32m$lnum\e[00m";
+				fi
+			fi
+		fi
+	done
+}
+
+while getopts "h?p:r:a:" option; do
+	case "${option}" in 
+		h|\?) 
+			usage
+			exit 0
+			;;
+		r)	ext="${OPTARG}"
+			;;
+		p)	path="${OPTARG}"
+			;;
+		a)	adir="${OPTARG}"
+			;;
+	esac
+done
+
+validate "$ext" "$path"
+
