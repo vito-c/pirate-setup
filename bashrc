@@ -156,6 +156,13 @@ count-files()
 	find . -type d \( -name util -o -name AirLauncher \) -prune -o -name \*.mk -exec bash -c 'echo $1 $(cat $1 | wc -l) ' _ {} \;
 }
 
+count-lines()
+{
+	if [[ $1 == "" ]]; then dir="."; else dir="$1"; fi
+	if [[ $2 == "" ]]; then name="*.cs"; else name="$2"; fi
+	find $dir -type f -name $name -exec bash -c 'echo $(cat $1 | wc -l) $1' _ {} \;
+}
+
 fd()
 {
 	case "$1" in
