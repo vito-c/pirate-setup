@@ -12,7 +12,7 @@ bind '\C-i':menu-complete
 bind '"\ew": backward-kill-word'
 
 # Override defaults
-export HISTSIZE=1500
+export HISTSIZE=1800
 export HISTCONTROL=ignoredups:erasedups
 shopt -s histappend
 #export PROMPT_COMMAND='history -a; history -r'
@@ -86,6 +86,7 @@ if [[ $(uname) =~ Darwin ]]; then
 		
 
 	vb() { vim $@ ~/.pirate-setup/bashrc; }
+	vg() { vim $@ ~/.pirate-setup/gitconfig; }
 	vv() { vim $@ ~/.pirate-setup/pirate-vim/vimrc; }
 	cb() { source ~/.bashrc; }
 	ls() { command ls -G "$@"; }
@@ -183,8 +184,14 @@ bump()
 
 blame-game()
 {
-	echo "" | pbcopy; for file in $1; do line="---------$file----------"; bar=$(git blame --line-porcelain "$file" | sed -n 's|^author||p' | sed -E '/(tz|time|mail)/d' | sort | uniq -c | sort -rn); printf '%s\n%s\n%s\n' "$(pbpaste)" "$line" "$bar" | pbcopy; done;
+	echo "" | pbcopy; 
+	for file in $1; do 
+		line="---------$file----------"; 
+		bar=$(git blame --line-porcelain "$file" | sed -n 's|^author||p' | sed -E '/(tz|time|mail)/d' | sort | uniq -c | sort -rn); printf '%s\n%s\n%s\n' "$(pbpaste)" "$line" "$bar" | pbcopy; 
+	done;
 }
+
+# find ./FarmMobile/Assets/Scripts -iname \*test\*.cs -print -exec sh -c 'file=$0; git --no-pager blame --line-porcelain "$file" | sed -n "s|^author||p" | sed -E "/(tz|time|mail)/d" | sort | uniq -c | sort -rn ' {} \;
 
 list-size() 
 {
@@ -469,20 +476,69 @@ brobot-test(){
 
 copy-job(){
 
-	JOB_NAME="$1"
-	PASS="$2"
-	SOURCE="http://vcutten:$PASS@ci.farm2mobile.zynga.com:8080"
-	DESTINATION="http://10.84.209.85:8080"
+	pass="$1"
+	job_name="$2"
+	if [[ "$3" == "" ]]; then 
+		new_job_name="$1"
+	else
+		new_job_name="$3"
+	fi
+
+	target="http://vcutten:$pass@ci.farm2mobile.zynga.com:8080"
+	destination="http://farm2mobile-build-master.zc2.zynga.com"
 	#Here is the job
-	curl -X GET "$SOURCE/job/$JOB_NAME/config.xml" -o tempconfig.xml
+	curl -X GET "$target/job/$job_name/config.xml" -o tempconfig.xml
 
 	#Update the configuration via posting a local configuration file
 	#curl -X POST http://user:password@hudson.server.org/job/myjobname/config.xml --data-binary "@mymodifiedlocalconfig.xml"
 
 	#Creating a new job via posting a local configuration file
-	curl -X POST "$DESTINATION/createItem?name=$JOB_NAME" --data-binary "@tempconfig.xml" -H "Content-Type: text/xml"
+	curl -X POST "$destination/createItem?name=$new_job_name" --data-binary "@tempconfig.xml" -H "Content-Type: text/xml"
 	
 	rm tempconfig.xml
+}
+
+edit-job-params(){
+	pass="$1"
+	job_name="$2"
+	param="$3"
+	query=
+	#value="git submodule update --force --init; git submodule update --force"
+	value="$4"
+	target="http://vcutten:$pass@ci.farm2mobile.zynga.com"
+	curl -X GET "$target/job/$job_name/config.xml" -o tempconfig.xml
+	echo "-- Before Edit ----------------------------------------------"
+	xpath tempconfig.xml "$3/text()" 2>/dev/null
+	echo -e "\n-------------------------------------------------------------"
+	xml ed -L -u "$query" -v "$value" tempconfig.xml
+	echo "-- After Edit -----------------------------------------------"
+	xpath tempconfig.xml "$3/text()" 2>/dev/null
+	echo -e "\n-------------------------------------------------------------"
+	curl -X POST "$target/job/$job_name/config.xml" --data-binary "@tempconfig.xml" -H "Content-Type: text/xml"
+	#rm -f tempconfig.xml
+	echo -e "-- Complete -------------------------------------------------"
+	#for job in M{01..16}_Pod_{iOS,Android}; do edit-job $pass $job; done
+}
+edit-job(){
+	pass="$1"
+	job_name="$2"
+	#query="//builders/hudson.tasks.Shell[1]/command"
+	query="$3"
+	#value="git submodule update --force --init; git submodule update --force"
+	value="$4"
+	target="http://vcutten:$pass@ci.farm2mobile.zynga.com"
+	curl -X GET "$target/job/$job_name/config.xml" -o tempconfig.xml
+	echo "-- Before Edit ----------------------------------------------"
+	xpath tempconfig.xml "$3/text()" 2>/dev/null
+	echo -e "\n-------------------------------------------------------------"
+	xml ed -L -u "$query" -v "$value" tempconfig.xml
+	echo "-- After Edit -----------------------------------------------"
+	xpath tempconfig.xml "$3/text()" 2>/dev/null
+	echo -e "\n-------------------------------------------------------------"
+	curl -X POST "$target/job/$job_name/config.xml" --data-binary "@tempconfig.xml" -H "Content-Type: text/xml"
+	#rm -f tempconfig.xml
+	echo -e "-- Complete -------------------------------------------------"
+	#for job in M{01..16}_Pod_{iOS,Android}; do edit-job $pass $job; done
 }
 
 
@@ -495,54 +551,54 @@ getFBUser(){
 updateStageUser(){
 	name=$1 password=$2 fbid=$3
 
-	GRAPH=https://graph.facebook.com;
-	APP_FID="XX"
-	APP_SEC="YY"
-	ACC_TKN=$(curl -F type=client_cred -F client_id=$APP_FID -F client_secret=$APP_SEC -F grant_type=client_credentials $GRAPH/oauth/access_token | sed -nE 's|access_token=(.*)$|\1|p');
-	echo "curl -F "password=$password" -F "name=$name" $GRAPH/$fbid?access_token=$ACC_TKN";
-	curl -F "name=$name" -F "password=$password" $GRAPH/$fbid?access_token=$ACC_TKN;
+	graph=https://graph.facebook.com;
+	app_fid="XX"
+	app_sec="YY"
+	acc_tkn=$(curl -F type=client_cred -F client_id=$app_fid -F client_secret=$app_sec -F grant_type=client_credentials $graph/oauth/access_token | sed -nE 's|access_token=(.*)$|\1|p');
+	echo "curl -F "password=$password" -F "name=$name" $graph/$fbid?access_token=$acc_tkn";
+	curl -F "name=$name" -F "password=$password" $graph/$fbid?access_token=$acc_tkn;
 }
 
 # Get test user login
 getRoboDomo(){
-	GRAPH=https://graph.facebook.com;
-	APP_FID="$1"
-	APP_SEC="$2"
-	FB_ID="100003999105669"
-	ACC_TKN=$(curl -F type=client_cred -F client_id=$APP_FID -F client_secret=$APP_SEC -F grant_type=client_credentials $GRAPH/oauth/access_token | sed -nE 's|access_token=(.*)$|\1|p');
-	#echo "curl -F "password=$password" -F "name=$name" $GRAPH/$fbid?access_token=$ACC_TKN";
-	#curl -F "name=$name" -F "password=$password" $GRAPH/$fbid?access_token=$ACC_TKN;
+	graph=https://graph.facebook.com;
+	app_fid="$1"
+	app_sec="$2"
+	fb_id="100003999105669"
+	acc_tkn=$(curl -F type=client_cred -F client_id=$app_fid -F client_secret=$app_sec -F grant_type=client_credentials $graph/oauth/access_token | sed -nE 's|access_token=(.*)$|\1|p');
+	#echo "curl -F "password=$password" -F "name=$name" $graph/$fbid?access_token=$acc_tkn";
+	#curl -F "name=$name" -F "password=$password" $graph/$fbid?access_token=$acc_tkn;
 	curl -F "installed=true" \
 		-F "name=Robo Domo" \
 		-F "locale=en_US" \
 		-F "permissions=read_stream" \
 		-F "method=post" \
-		$GRAPH/$APP_FID/accounts/test-users?access_token=$ACC_TKN | sed -nE 's|.*"login_url":"([^"]*)".*|\1|p'
+		$graph/$app_fid/accounts/test-users?access_token=$acc_tkn | sed -nE 's|.*"login_url":"([^"]*)".*|\1|p'
 }
 
 # Manage my ap
 updateDevUser(){
 	name=$1 password=$2 fbid=$3
 
-	GRAPH=https://graph.facebook.com;
-	APP_FID="$1"
-	APP_SEC="$2"
-	ACC_TKN=$(curl -F type=client_cred -F client_id=$APP_FID -F client_secret=$APP_SEC -F grant_type=client_credentials $GRAPH/oauth/access_token | sed -nE 's|access_token=(.*)$|\1|p');
-	echo "curl -F "password=$password" -F "name=$name" $GRAPH/$fbid?access_token=$ACC_TKN";
-	curl -F "name=$name" -F "password=$password" $GRAPH/$fbid?access_token=$ACC_TKN;
+	graph=https://graph.facebook.com;
+	app_fid="$1"
+	app_sec="$2"
+	acc_tkn=$(curl -F type=client_cred -F client_id=$app_fid -F client_secret=$app_sec -F grant_type=client_credentials $graph/oauth/access_token | sed -nE 's|access_token=(.*)$|\1|p');
+	echo "curl -F "password=$password" -F "name=$name" $graph/$fbid?access_token=$acc_tkn";
+	curl -F "name=$name" -F "password=$password" $graph/$fbid?access_token=$acc_tkn;
 }
 
 # Script needs to be run from repo root directory. 
 manage_allApps(){
-	GRAPH=https://graph.facebook.com;
+	graph=https://graph.facebook.com;
 	apps=(art blue feature{10..20} feature0{1..9} green rainbow red tractor trunk silver);
 	for APP in "${apps[@]}"; do
-		APP_FID=$(sed -En "s|.*'FB_APP_ID', ?'([^']*)'.*|\1|p" ~/workrepos/${AWESOMEVILLE}-main/Server/game/config/$APP/local.inc.php);
-		APP_SEC=$(sed -En "s|.*'FB_API_SECRET', ?'([^']*)'.*|\1|p" ~/workrepos/${AWESOMEVILLE}-main/Server/game/config/$APP/local.inc.php);
-		ACC_TKN=$(curl -F type=client_cred -F client_id=$APP_FID -F client_secret=$APP_SEC -F grant_type=client_credentials $GRAPH/oauth/access_token | sed -nE 's|access_token=(.*)$|\1|p');
-		echo -e Exucing on app: $APP\n;
-		echo -e curl $1 $GRAPH/$APP_FID?access_token=$ACC_TKN\n;
-		curl $1 $GRAPH/$APP_FID?access_token=$ACC_TKN;
+		app_fid=$(sed -En "s|.*'FB_APP_ID', ?'([^']*)'.*|\1|p" ~/workrepos/${AWESOMEVILLE}-main/Server/game/config/$app/local.inc.php);
+		app_sec=$(sed -En "s|.*'FB_API_SECRET', ?'([^']*)'.*|\1|p" ~/workrepos/${AWESOMEVILLE}-main/Server/game/config/$app/local.inc.php);
+		acc_tkn=$(curl -F type=client_cred -F client_id=$app_fid -F client_secret=$app_sec -F grant_type=client_credentials $graph/oauth/access_token | sed -nE 's|access_token=(.*)$|\1|p');
+		echo -e Exucing on app: $app\n;
+		echo -e curl $1 $graph/$app_fid?access_token=$acc_tkn\n;
+		curl $1 $graph/$app_fid?access_token=$acc_tkn;
 	done;
 }
 
