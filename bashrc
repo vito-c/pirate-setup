@@ -521,11 +521,12 @@ edit-job-params(){
 	echo "-- After Edit -----------------------------------------------"
 	xpath tempconfig.xml "$3/text()" 2>/dev/null
 	echo -e "\n-------------------------------------------------------------"
-	curl -X POST "$target/job/$job_name/config.xml" --data-binary "@tempconfig.xml" -H "Content-Type: text/xml"
+	#curl -X POST "$target/job/$job_name/config.xml" --data-binary "@tempconfig.xml" -H "Content-Type: text/xml"
 	#rm -f tempconfig.xml
 	echo -e "-- Complete -------------------------------------------------"
 	#for job in M{01..16}_Pod_{iOS,Android}; do edit-job $pass $job; done
 }
+
 edit-job(){
 	pass="$1"
 	job_name="$2"
@@ -547,7 +548,6 @@ edit-job(){
 	echo -e "-- Complete -------------------------------------------------"
 	#for job in M{01..16}_Pod_{iOS,Android}; do edit-job $pass $job; done
 }
-
 
 getFBUser(){
 	name=
