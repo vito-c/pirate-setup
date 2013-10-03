@@ -1,0 +1,100 @@
+#!/usr/local/bin/bash
+
+# SSH with host name and IP address in background (only in iTerm.app)
+
+
+function __calculate_iterm_window_dimensions()
+{
+  local size=( $(osascript -e "tell application \"iTerm\"
+    get bounds of the first window
+  end tell" | tr ',' ' ') )
+
+  local x1=${size[0]} y1=${size[1]} x2=${size[2]} y2=${size[3]}
+  # 15px - scrollbar width
+  local w=$(( $x2 - $x1 - 15 ))
+  # 44px - titlebar + tabs height
+  local h=$(( $y2 - $y1 - 44))
+  echo "${w}x${h}"
+}
+
+
+function set_bg()
+{
+  local tty=$(tty)
+  osascript -e "
+    tell application \"iTerm\"
+      repeat with theTerminal in terminals
+        tell theTerminal
+          try
+            tell session id \"$tty\"
+              set background image path to \"$1\"
+            end tell
+          on error errmesg number errn
+          end try
+        end tell
+      end repeat
+    end tell"
+}
+
+on_exit()
+{
+  rm -f "/tmp/iTermBG.$$.png"
+}
+
+update_bkg()
+{
+	create_img
+	set_bg "/tmp/iTermBG.$$.png"
+}
+
+create_img()
+{
+	# Console dimensions
+	DIMENSIONS=$(__calculate_iterm_window_dimensions)
+
+	BG_COLOR="#000000"       # Background color
+	FG_COLOR="#992020"       # Foreground color
+	GRAVITY="NorthEast"      # Text gravity (NorthWest, North, NorthEast,
+							 # West, Center, East, SouthWest, South, SouthEast)
+	OFFSET1="20,10"          # Text offset
+	OFFSET2="20,80"          # Text offset
+	FONT_SIZE="60"           # Font size in points
+	FONT_STYLE="Normal"      # Font style (Any, Italic, Normal, Oblique)
+	# Font path
+	FONT='Bleeding Cowboys'
+
+
+	# RESOLVED_HOSTNAME=`nslookup $HOSTNAME|tail -n +4|grep '^Name:'|cut -f2 -d $'\t'`
+	# RESOLVED_IP=`nslookup $HOSTNAME|tail -n +4|grep '^Address:'|cut -f2 -d $':'|tail -c +2`
+	output=`dscacheutil -q host -a name $HOSTNAME`
+	RESOLVED_HOSTNAME=$(hostname -s)
+	RESOLVED_IP=`echo -e "$output"|grep '^ip_address:'|awk '{print $2}'`
+	convert \
+	  -size "$DIMENSIONS" xc:"$BG_COLOR" -gravity "$GRAVITY" -fill \
+	  "$FG_COLOR" -family "$FONT" -style "$FONT_STYLE" -pointsize "$FONT_SIZE" \
+	  -antialias -draw "text $OFFSET1 '${RESOLVED_HOSTNAME:-$HOSTNAME}'" \
+	  -pointsize 30 -draw "text $OFFSET2 '${RESOLVED_IP:-}'" -alpha Off \
+	  "/tmp/iTermBG.$$.png"
+}
+
+sshx()
+{
+	remote_host=$(echo "$@" | awk \
+		'match($0, /([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]+|[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})/)
+		{ print substr($0, RSTART, RLENGTH) }')
+	short=${remote_host#*@}
+	if [[ ${!#} != $remote_host ]]; then
+		command ssh "$@";
+	elif command ssh "$@"; then
+		echo -e "\033];$short\007";
+	else
+		echo "ssh failed";
+	fi
+}
+
+# Run update_bkg when script starts
+update_bkg
+
+# traps to handle clean up
+trap on_exit EXIT
+trap update_bkg SIGWINCH

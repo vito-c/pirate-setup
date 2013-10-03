@@ -83,13 +83,17 @@ if [[ $(uname) =~ Darwin ]]; then
 		fi
 	}
 
-		
-
 	vb() { vim $@ ~/.pirate-setup/bashrc; }
 	vv() { vim $@ ~/.pirate-setup/pirate-vim/vimrc; }
 	cb() { source ~/.bashrc; }
 	ls() { command ls -G "$@"; }
 	fn() { command find . -iname "$@"; }
+	ehco() { command echo "$@"; }
+	chmod() { command chmod "$@"; }
+	fw() {
+		file='*'"$1"'*'
+		ff $file $2 $3
+	}
 	ff() { 
 		if [[ "$2" == "" ]]; then 
 			type='*.cs';
@@ -109,10 +113,11 @@ if [[ $(uname) =~ Darwin ]]; then
 	# might be causing vim diff issues
 	vimdiff() { command vim -d "$@"; }
 	vif() { 
-		if [[ "$2" == "" || "$2" == "*.cs" ]]; then 
-			command vim --servername UNITY --remote-silent $(ff "$@"); 
+		#if [[ "$2" == "" || "$2" == "*.cs" ]]; then 
+		if [[ "$(pwd -P)" == "$HOME/workrepos/farm-mobile"/* ]]; then
+			command vim --servername UNITY --remote-silent $(fw "$@"); 
 		else
-			command vim $(ff "$@" );
+			command vim $(fw "$@" );
 		fi
 	}
 	setProfile() {
@@ -135,7 +140,7 @@ fi
 export FCSH=$FLEX_HOME/bin/fcsh
 export PLAN9=/usr/local/plan9
 PATH=$PATH:$PLAN9/bin
-export PATH="/usr/local/bin:/usr/local/bin/bash:/usr/sbin/user:~/.pirate-setup/bin:$FLEX_HOME/bin:$PATH:$PLAN9/bin:/usr/local/share/npm/bin:/usr/local/Cellar/node/0.10.7/lib/node_modules/npm/bin/node-gyp-bin"
+export PATH="~/.pirate-setup/bin:/usr/local/bin:/usr/sbin/user:$FLEX_HOME/bin:$PATH:$PLAN9/bin:/usr/local/share/npm/bin:/usr/local/Cellar/node/0.10.7/lib/node_modules/npm/bin/node-gyp-bin"
 #export HOSTSTUB=$(hostStub);                                                                                      
 export PS1="\[\e[36;1m\][\A] \[\e[0;35m\]$HOSTSTUB \[\e[31;1m\]\w> \[\e[0m\]"                                     
 export PS2="\[\e[31;1m\]> \[\e[0m\]"                                                                              
@@ -159,7 +164,7 @@ count-files()
 fd()
 {
 	case "$1" in
-		'repo')
+		'r'|'repo'|'root')
 			startdir=$PWD;
 			while [[ $PWD != $HOME && $(ls -a | grep '^.git$') != '.git' && $PWD != / ]]; do cd ..; done;
 			enddir=$PWD;
@@ -192,8 +197,14 @@ list-size()
 	#du -sk "$@" | sort -n | awk '{if ($1 > 1048576) printf("%.1fG\t%s\n",$1/1048576,$2); else if ($1 > 1024) printf("%.1fM\t%s\n",$1/1024,$2); else printf("%sK\t%s\n",$1,$2) }'
 }
 
-ql(){
+ql()
+{
 	qlmanage -p "$@" >& /dev/null &
+}
+
+excuse()
+{
+	curl -s http://developerexcuses.com/ | perl -ne '/center.*nofollow.*?>(.*?)<\/a>/ and print "$1\n"'
 }
 
 git-revive()
@@ -271,7 +282,8 @@ function port() {
     fi
 }
 
-checkPort(){
+checkPort()
+{
 	exec 6<>/dev/tcp/127.0.0.1/$1
 }
 
@@ -280,44 +292,8 @@ checkPort(){
 #                                           Utility Functions with some server specific                                     #
 #                                                                                                                           #
 #############################################################################################################################
-export dev1=${AWESOMEVILLE}-dev-01.zc1.zynga.com;
-export dev2=${AWESOMEVILLE}-dev-02.zc1.zynga.com;
-export dev3=${AWESOMEVILLE}-dev-03.zc1.zynga.com;
-export dev4=${AWESOMEVILLE}-dev-04.zc1.zynga.com;
-export dev5=${AWESOMEVILLE}-dev-05.zc1.zynga.com;
-export dev6=${AWESOMEVILLE}-dev-06.zc1.zynga.com;
-export dev7=${AWESOMEVILLE}-dev-07.zc1.zynga.com;
-export slave01=${AWESOMEVILLE}-build-slave01.zc1.zynga.com;
-export slave02=${AWESOMEVILLE}-build-slave02.zc1.zynga.com;
-export slave03=${AWESOMEVILLE}-build-slave03.zc1.zynga.com;
-export master=${AWESOMEVILLE}-build-master.zc1.zynga.com;
-export zconold=${VILLE}-staging-zcon-01.zc2.zynga.com;
 
-cpd1() { scp -r ${AWESOMEVILLE}-dev-01.zc1.zynga.com $@; } 
-cpd2() { scp -r ${AWESOMEVILLE}-dev-02.zc1.zynga.com $@; }   
-cpd3() { scp -r ${AWESOMEVILLE}-dev-03.zc1.zynga.com $@; }   
-cpd4() { scp -r ${AWESOMEVILLE}-dev-04.zc1.zynga.com $@; }   
-cpd5() { scp -r ${AWESOMEVILLE}-dev-05.zc1.zynga.com $@; }   
-cpd6() { scp -r ${AWESOMEVILLE}-dev-06.zc1.zynga.com $@; }   
-cpd7() { scp -r ${AWESOMEVILLE}-dev-07.zc1.zynga.com $@; }   
-cpl1(){ scp -r ${AWESOMEVILLE}-build-slave01.zc1.zynga.com $@; }   
-cpl2(){ scp -r ${AWESOMEVILLE}-build-slave02.zc1.zynga.com $@; }   
-cpl3(){ scp -r ${AWESOMEVILLE}-build-slave03.zc1.zynga.com $@; }   
-cpm(){ scp -r ${AWESOMEVILLE}-build-master.zc1.zynga.com $@; }   
-cpfstage() { scp -r ${VILLE}-staging-zcon-01.zc2.zynga.com $@; }
-
-ssd1() { ssh ${AWESOMEVILLE}-dev-01.zc1.zynga.com $@; } 
-ssd2() { echo -e "\033];dev-02\007"; ssh ${AWESOMEVILLE}-dev-02.zc1.zynga.com $@; }   
-ssd3() { echo -e "\033];dev-03\007"; ssh ${AWESOMEVILLE}-dev-03.zc1.zynga.com $@; }   
-ssd4() { echo -e "\033];dev-04\007"; ssh ${AWESOMEVILLE}-dev-04.zc1.zynga.com $@; }   
-ssd5() { echo -e "\033];dev-05\007"; ssh ${AWESOMEVILLE}-dev-05.zc1.zynga.com $@; }   
-ssd6() { echo -e "\033];dev-06\007"; ssh ${AWESOMEVILLE}-dev-06.zc1.zynga.com $@; }   
-ssd7() { echo -e "\033];dev-07\007"; ssh ${AWESOMEVILLE}-dev-07.zc1.zynga.com $@; }   
-ssl1(){ echo -e "\033];fslave-01\007"; ssh ${AWESOMEVILLE}-build-slave01.zc1.zynga.com $@; }   
-ssl2(){ echo -e "\033];fslave-02\007"; ssh ${AWESOMEVILLE}-build-slave02.zc1.zynga.com $@; }   
-ssl3(){ echo -e "\033];fslave-03\007"; ssh ${AWESOMEVILLE}-build-slave03.zc1.zynga.com $@; }   
-ssm(){ echo -e "\033];fmaster\007"; ssh ${AWESOMEVILLE}-build-master.zc1.zynga.com $@; }   
-ssb(){ echo -e "\033];brobot\007"; ssh farm-brobot $@; }   
+ssb(){ echo -e "\033];brobot\007"; ssh farm2-brobot-01.zc2.zynga.com $@; }   
 ssvt(){ ssh vcutten@vito-tower.local $@; }
 ssdt(){ ssh redhand@destro-tower.local $@; }
 ssmb(){ ssh vcutten@vito-mbp.local $@; }
@@ -387,22 +363,14 @@ trcphp()
 
 }
 
-# Find File by Name Not part of svn
-nfind()
-{       
-	find . -name $1
-}
 
 # export a display
-vdisplay(){
-    (Xvfb :$@ &); export DISPLAY=:$@
-}
+vdisplay(){ (Xvfb :$@ &); export DISPLAY=:$@; }
 
-listenPort(){
-    sudo ngrep -d lo0 -W byline port $@
-}
+listenPort(){ sudo ngrep -d lo0 -W byline port $@; }
 
-ldapquick(){
+ldapquick()
+{
     ldapsearch -x -h ds1.ca2.zynga.com -b  "dc=zynga,dc=com" "(memberUid=$1)" cn
 }
 
@@ -411,7 +379,8 @@ ldapquick(){
 #                                           Utility Functions with some server specific                                     #
 #                                                                                                                           #
 #############################################################################################################################
-checkService(){
+checkService()
+{
 	if ps ax | grep -v grep | grep $1 > /dev/null
 	then
 	    echo "$1 service running, everything is fine"
@@ -420,22 +389,24 @@ checkService(){
 	fi
 }
 
-alive(){
+alive()
+{
 	if kill -0 "$1"; then echo "please don't kill me $1"; fi
 }
-showAll(){
+showAll()
+{
 	defaults write com.apple.Finder AppleShowAllFiles $1
 	killall Finder
 }
-nonunicode(){
-    grep --color='auto' -Prn "[\x80-\xFF]" $1
-}
+nonunicode(){ grep --color='auto' -Prn "[\x80-\xFF]" $1; }
 
-brobot-jira(){
+brobot-jira()
+{
 	curl -u $JIRA_ACCT:$JIRA_PSWD https://jira.corp.zynga.com/rest/api/latest/issue/FARMTWO-39652.json
 }
 
-brobot-merge(){
+brobot-merge()
+{
 	chat='Farm%202%20MERGE%20CHAT%20|%20Release%202012.08.13.01%20GH%20update%20|%20App:%20R1%20|%20Status:%20https://docs.google.com/a/zynga.com/spreadsheet/ccc?key=0AoX0nX5wfzbNdDd6Ql96NEVMU05aRTNMRUFrNlVtOVE#gid=186'
 	msg=$1
 	bot=http://skype.${AWESOMEVILLE}-dev-11.ec2.zynga.com/put_message.php
@@ -443,7 +414,8 @@ brobot-merge(){
 	echo "curl -F body="$msg" $bot/put_message.php?toChat=$chat"
 }
 
-brobot-farmops(){
+brobot-farmops()
+{
 	#string=$1
 	#msg="${string// /%20}"
 	msg=$1
@@ -451,7 +423,8 @@ brobot-farmops(){
 	curl -F body="$msg" $bot/put_message.php?toChat=Farm%202%20-%20Ops
 }
 
-brobot-jenkins(){
+brobot-jenkins()
+{
 	#string=$1
 	#msg="${string// /%20}"
 	msg=$1
@@ -459,7 +432,8 @@ brobot-jenkins(){
 	curl -F body="$msg" $bot/put_message.php?toChat=Jenkins%20Test
 }
 
-brobot-test(){
+brobot-test()
+{
 	#string=$1
 	#msg="${string// /%20}"
 	msg=$1
@@ -467,10 +441,38 @@ brobot-test(){
 	curl -F body="$msg" $bot/put_message.php?toChat=Farm%202%20Robo%20Test
 }
 
-copy-job(){
+get-config()
+{
+	JOB_NAME="$1"
+	PASS="$2"
+	SOURCE="http://vcutten:$PASS@ci.farm2mobile.zynga.com/view/All/job"
+	#Here is the job
+	echo "$SOURCE/$JOB_NAME/config.xml"
+	curl -X GET "$SOURCE/$JOB_NAME/config.xml" -o tempconfig.xml
+}
+
+build-m17()
+{
+	TOKEN="2caddd33af1a18e53cee7645d82144e1"
+	SOURCE="http://ci.farm3.zynga.com"
+	JOB_NAME="M17_Pod_iOS"
+	URL="$SOURCE/buildByToken/buildWithParameters?job=$JOB_NAME&token=$TOKEN"
+	JSON="{\"parameter\": [{\"name\": \"taskfile\", \"value\": \"$taskfile\"},
+			{\"name\": \"task\", \"value\": \"$task\"},
+			{\"name\": \"jobParameters\", \"value\": \"$jobargs\"}], \"\": \"\"}"
+	#wget --auth-no-challenge --http-user=user --http-password=apiToken http://jenkins.yourcompany.com/job/your_job/build?token=TOKEN
+	#curl -X POST $url -d token=zorn --data-urlencode json="$json"
+	# --data-urlencode json="$JSON"
+	echo $URL
+	curl -X POST $URL
+}
+
+copy-job()
+{
 
 	JOB_NAME="$1"
 	PASS="$2"
+	TOKEN="2caddd33af1a18e53cee7645d82144e1"
 	SOURCE="http://vcutten:$PASS@ci.farm2mobile.zynga.com:8080"
 	DESTINATION="http://10.84.209.85:8080"
 	#Here is the job
@@ -486,13 +488,15 @@ copy-job(){
 }
 
 
-getFBUser(){
+getFBUser()
+{
 	name=
 	100003778250086
 }
 
 # TODO: Fix this
-updateStageUser(){
+updateStageUser()
+{
 	name=$1 password=$2 fbid=$3
 
 	GRAPH=https://graph.facebook.com;
@@ -504,7 +508,8 @@ updateStageUser(){
 }
 
 # Get test user login
-getRoboDomo(){
+getRoboDomo()
+{
 	GRAPH=https://graph.facebook.com;
 	APP_FID="$1"
 	APP_SEC="$2"
@@ -521,7 +526,8 @@ getRoboDomo(){
 }
 
 # Manage my ap
-updateDevUser(){
+updateDevUser()
+{
 	name=$1 password=$2 fbid=$3
 
 	GRAPH=https://graph.facebook.com;
@@ -533,7 +539,8 @@ updateDevUser(){
 }
 
 # Script needs to be run from repo root directory. 
-manage_allApps(){
+manage_allApps()
+{
 	GRAPH=https://graph.facebook.com;
 	apps=(art blue feature{10..20} feature0{1..9} green rainbow red tractor trunk silver);
 	for APP in "${apps[@]}"; do
@@ -569,7 +576,8 @@ function grepfiles()
 	find . -name "$1" -exec grep -in --color="always" "$2" /dev/null {} +; 
 }
 
-navigate(){
+navigate()
+{
 	osascript -e 'tell application "Chrome" activate do JavaScript "window.open(http://www.yahoo.com)" in document 1 end tell'
 	#osascript -e tell application "Chrome" \
 	#	activate \
@@ -577,12 +585,14 @@ navigate(){
 	#end tell
 }
 
-cgame(){
+cgame()
+{
 	php /Users/vcutten/workrepos/${AWESOMEVILLE}-$1/Server/game/scripts/stitch_settings.php
 }
 
 
-function loadBlobToTest(){
+function loadBlobToTest()
+{
 
 	curl \
 		-F action=load_user_blob \
@@ -595,7 +605,8 @@ function loadBlobToTest(){
 		http://fb.feature12.farmville2-dev-02.zc1.zynga.com/automation/api.php?
 }
 
-loadBlobTo(){
+loadBlobTo()
+{
 	curl -F action=load_user_blob \
 		-F SN=1 \
 		-F zyAuthHash=dd93517a5f8d83d2291a81596eb5b09b \
@@ -605,11 +616,13 @@ loadBlobTo(){
 		http://fb.vcutten.${AWESOMEVILLE}-dev-04.zc1.zynga.com/public/automation/api.php?
 }
 
-prettyJson(){
+prettyJson()
+{
 	cat $1 | python -mjson.tool > $1.pt
 }
 
-loadBlobToStage(){
+loadBlobToStage()
+{
 	curl -F action=load_user_blob \
 		-F SN=1 \
 		-F zyAuthHash=4871087f18221fcab65fbe58bdcfdd8d \
@@ -618,3 +631,5 @@ loadBlobToStage(){
 		-F userblob_name=staging-lame \
 		http://farm2-staging-admin-01.zc2.zynga.com:8966/api.php
 }
+
+source ~/.pirate-setup/itermbkg

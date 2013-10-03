@@ -31,6 +31,7 @@
 	#rev = !git show --pretty="format:" --name-only
 	restore = !git checkout $(git rev-list -n 1 HEAD -- "$1")^ -- "$1"
 	lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+	art = !git co -- $(git st | grep -Ev '^##' | grep -E '^ M' | awk '{ print $2 }' | xargs )
 [color]
 	ui = true
 [merge]
