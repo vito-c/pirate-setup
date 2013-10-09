@@ -63,6 +63,12 @@ if [[ $(uname) =~ Darwin ]]; then
 		source `brew --prefix`/share/bash-completion/bash_completion;
 	fi
 
+	disable-spotlight(){
+		sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.metadata.mds.plist
+	}
+	enable-spotlight(){
+		sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.metadata.mds.plist
+	}
 	omnisharp() {
 		if [[ "$1" == "" ]]; then 
 			slnloc=~/workrepos/mobile/FarmMobile/FarmMobile.sln;
