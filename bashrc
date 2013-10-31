@@ -12,11 +12,18 @@ bind '\C-i':menu-complete
 bind '"\ew": backward-kill-word'
 
 # Override defaults
-export HISTSIZE=1800
-export HISTCONTROL=ignoredups:erasedups
-shopt -s histappend
+#export HISTSIZE=3600
 #export PROMPT_COMMAND='history -a; history -r'
-export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
+#PROMPT_COMMAND="history -a"
+#shopt -s histappend
+HISTFILESIZE=400000000
+#HISTCONTROL=ignoredups:erasedups:ignoreboth
+HISTCONTROL=ignoredups:erasedups
+HISTSIZE=10000
+PROMPT_COMMAND="history -n; history -w; history -c; history -r; $PROMPT_COMMAND"
+PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
+export HISTSIZE PROMPT_COMMAND HISTCONTROL
+shopt -s histappend
 
 
 #export SCALA_HOME=/Users/vcutten/workrepos/apparat/scala-2.8.2.final
@@ -121,7 +128,7 @@ if [[ $(uname) =~ Darwin ]]; then
 	vimdiff() { command vim -d "$@"; }
 	vif() { 
 		#if [[ "$2" == "" || "$2" == "*.cs" ]]; then 
-		if [[ "$(pwd -P)" == "$HOME/workrepos/farm-mobile"/* ]]; then
+		if [[ "$(pwd -P)" == "$HOME/workrepos/farm-mobile"* ]]; then
 			command vim --servername UNITY --remote-silent $(fw "$@"); 
 		else
 			command vim $(fw "$@" );
@@ -147,7 +154,7 @@ fi
 export FCSH=$FLEX_HOME/bin/fcsh
 export PLAN9=/usr/local/plan9
 PATH=$PATH:$PLAN9/bin
-export PATH="~/.pirate-setup/bin:/usr/local/bin:/usr/sbin/user:$FLEX_HOME/bin:$PATH:$PLAN9/bin:/usr/local/share/npm/bin:/usr/local/Cellar/node/0.10.7/lib/node_modules/npm/bin/node-gyp-bin"
+export PATH="~/.pirate-setup/bin:/usr/sbin/user:$FLEX_HOME/bin:$PATH:$PLAN9/bin:/usr/local/share/npm/bin:/usr/local/Cellar/node/0.10.7/lib/node_modules/npm/bin/node-gyp-bin:/usr/local/bin"
 #export HOSTSTUB=$(hostStub);                                                                                      
 export PS1="\[\e[36;1m\][\A] \[\e[0;35m\]$HOSTSTUB \[\e[31;1m\]\w> \[\e[0m\]"                                     
 export PS2="\[\e[31;1m\]> \[\e[0m\]"                                                                              

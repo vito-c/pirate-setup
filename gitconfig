@@ -3,7 +3,7 @@
 	email = vcutten@zynga.com
 [core]
 	autocrlf = input
-	ignorecase = false
+	ignorecase = true
 	editor = /usr/local/bin/vim
 [alias]
 	mc = !git status -s | grep '^UU' | awk '{print $2}'
