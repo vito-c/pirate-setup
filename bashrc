@@ -73,6 +73,7 @@ if [[ $(uname) =~ Darwin ]]; then
 	disable-spotlight(){
 		sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.metadata.mds.plist
 	}
+
 	enable-spotlight(){
 		sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.metadata.mds.plist
 	}
@@ -128,12 +129,19 @@ if [[ $(uname) =~ Darwin ]]; then
 	vimdiff() { command vim -d "$@"; }
 	vif() { 
 		#if [[ "$2" == "" || "$2" == "*.cs" ]]; then 
+#re='^[0-9]+$'
+#if ! [[ $yournumber =~ $re ]] ; then
+#   echo "error: Not a number" >&2; exit 1
+#fi
+
 		if [[ "$(pwd -P)" == "$HOME/workrepos/farm-mobile"* ]]; then
+			echo -e "\033];UNITY\007"
 			command vim --servername UNITY --remote-silent $(fw "$@"); 
 		else
 			command vim $(fw "$@" );
 		fi
 	}
+	# pass profile name you want to set eg Dark or Light
 	setProfile() {
 		echo -e "\033]50;SetProfile=$1\a"
 	}  
@@ -714,4 +722,4 @@ loadBlobToStage()
 		http://farm2-staging-admin-01.zc2.zynga.com:8966/api.php
 }
 
-source ~/.pirate-setup/itermbkg
+#source ~/.pirate-setup/itermbkg

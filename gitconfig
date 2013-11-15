@@ -38,6 +38,7 @@
 	tool = vimdiff
 [mergetool]
 	keepBackup = false
+	prompt = false
 [push]
 	default = tracking
 [diff]
