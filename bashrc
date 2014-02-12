@@ -7,6 +7,13 @@
 export ANT_OPTS="-Xmx1024m -Xms512m -XX:MaxPermSize=512m"
 export JAVA_OPTS="-Xmx2024m -Xms1024m -XX:MaxPermSize=512m"
 export HOSTNAME=$(hostname)
+##
+## Android SDK
+##
+export ANDROID_HOME=/usr/local/opt/android-sdk
+export ANDROID_NDK=/usr/local/opt/android-ndk
+export HOMEBREW_GITHUB_API_TOKEN="9a68042998770190facf2aedeab4a1794ac9a36f"
+
 bind '\C-Space':complete
 bind '\C-i':menu-complete
 bind '"\ew": backward-kill-word'
@@ -39,6 +46,7 @@ shopt -s histappend
 #export LESS_TERMCAP_so=$'\E[38;5;246m'    # begin standout-mode - info box
 #export LESS_TERMCAP_ue=$'\E[0m'           # end underline
 #export LESS_TERMCAP_us=$'\E[04;38;5;146m' # begin underline
+export HOMEBREW_EDITOR=vim
 
 #############################################################################################################################
 #                                                                                                                           #
@@ -99,7 +107,7 @@ if [[ $(uname) =~ Darwin ]]; then
 
 	vb() { vim $@ ~/.pirate-setup/bashrc; }
 	vg() { vim $@ ~/.pirate-setup/gitconfig; }
-	vv() { vim $@ ~/.pirate-setup/pirate-vim/vimrc; }
+	vv() { vim $@ ~/.vim/vimrc; }
 	cb() { source ~/.bashrc; }
 	ls() { command ls -G "$@"; }
 	fn() { command find . -iname "$@"; }
@@ -122,7 +130,7 @@ if [[ $(uname) =~ Darwin ]]; then
 			find "$3" \( -name .\*~ -o -name \*.meta -prune \) -o -iname "$1""$type" -print; 
 		fi
 	}
-	grep() { command grep --color=auto "$@"; }
+	grep() { command grep --color='auto' "$@"; }
 	ll() { command ls -lGh "$@"; }
 	la() { command ls -lGha "$@"; }
 	# might be causing vim diff issues
@@ -134,9 +142,13 @@ if [[ $(uname) =~ Darwin ]]; then
 #   echo "error: Not a number" >&2; exit 1
 #fi
 
-		if [[ "$(pwd -P)" == "$HOME/workrepos/farm-mobile"* ]]; then
+		if [[ "$(pwd -P)" == "$HOME/workrepos/mobile"* ]]; then
 			echo -e "\033];UNITY\007"
-			command vim --servername UNITY --remote-silent $(fw "$@"); 
+			if [[ -f "$1" ]]; then 
+				command vim --servername UNITY --remote-silent "$@";
+			else
+				command vim --servername UNITY --remote-silent $(fw "$@"); 
+			fi
 		else
 			command vim $(fw "$@" );
 		fi
@@ -161,8 +173,9 @@ fi
 
 export FCSH=$FLEX_HOME/bin/fcsh
 export PLAN9=/usr/local/plan9
-PATH=$PATH:$PLAN9/bin
-export PATH="~/.pirate-setup/bin:/usr/sbin/user:$FLEX_HOME/bin:$PATH:$PLAN9/bin:/usr/local/share/npm/bin:/usr/local/Cellar/node/0.10.7/lib/node_modules/npm/bin/node-gyp-bin:/usr/local/bin"
+export PATH="/usr/local/bin:$PATH"
+#PATH=$PATH:$PLAN9/bin
+#export PATH="~/.pirate-setup/bin:/usr/sbin/user:$FLEX_HOME/bin:$PATH:$PLAN9/bin:/usr/local/share/npm/bin:/usr/local/Cellar/node/0.10.7/lib/node_modules/npm/bin/node-gyp-bin:/usr/local/bin"
 #export HOSTSTUB=$(hostStub);                                                                                      
 export PS1="\[\e[36;1m\][\A] \[\e[0;35m\]$HOSTSTUB \[\e[31;1m\]\w> \[\e[0m\]"                                     
 export PS2="\[\e[31;1m\]> \[\e[0m\]"                                                                              
