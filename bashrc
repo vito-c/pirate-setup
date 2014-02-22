@@ -173,7 +173,8 @@ fi
 
 export FCSH=$FLEX_HOME/bin/fcsh
 export PLAN9=/usr/local/plan9
-export PATH="/usr/local/bin:$PATH"
+PATH="/usr/local/bin:$PATH"
+#export PATH="~/.pirate-setup/bin:/usr/sbin/user:$PATH:/usr/local/share/npm/bin:/usr/local/Cellar/node/0.10.7/lib/node_modules/npm/bin/node-gyp-bin"
 #PATH=$PATH:$PLAN9/bin
 #export PATH="~/.pirate-setup/bin:/usr/sbin/user:$FLEX_HOME/bin:$PATH:$PLAN9/bin:/usr/local/share/npm/bin:/usr/local/Cellar/node/0.10.7/lib/node_modules/npm/bin/node-gyp-bin:/usr/local/bin"
 #export HOSTSTUB=$(hostStub);                                                                                      
@@ -346,15 +347,25 @@ ssvt(){ ssh vcutten@vito-tower.local $@; }
 ssdt(){ ssh redhand@destro-tower.local $@; }
 ssmb(){ ssh vcutten@vito-mbp.local $@; }
 
-mini01(){ ssh z_farmville2_build@mobile-dbx-farm01 $@; }
-mini02(){ ssh z_farmville2_build@mobile-dbx-farm02 $@; }
-mini03(){ ssh z_farmville2_build@mobile-dbx-farm03 $@; }
-mini04(){ ssh z_farmville2_build@mobile-dbx-farm04 $@; }
-mini05(){ ssh z_farmville2_build@mbx-farm205-ca14769  $@; }
-mini06(){ ssh z_farmville2_build@mbx-farm206-ca14774  $@; }
-mini07(){ ssh z_farmville2_build@mbx-farm207-ca14757  $@; }
-mini08(){ ssh z_farmville2_build@mbx-farm208-ca14766  $@; }
-mini09(){ ssh z_farmville2_build@mbx-farm209-ca14735  $@; }
+export MINI01="mbx-farm201-zgn04689b";
+export MINI02="mbx-farm202-zgn23872";
+export MINI03="mbx-farm203-ga13051";
+export MINI04="mbx-farm204-zyn04450b";
+export MINI05="mbx-farm205-ca14769";
+export MINI06="mbx-farm206-ca14774";
+export MINI07="mbx-farm207-ca14757";
+export MINI08="mbx-farm208-ca14766";
+export MINI09="mbx-farm209-ca14735";
+
+mini01(){ ssh z_farmville2_build@$MINI01 $@; }
+mini02(){ ssh z_farmville2_build@$MINI02 $@; }
+mini03(){ ssh z_farmville2_build@$MINI03 $@; }
+mini04(){ ssh z_farmville2_build@$MINI04 $@; }
+mini05(){ ssh z_farmville2_build@$MINI05 $@; }
+mini06(){ ssh z_farmville2_build@$MINI06 $@; }
+mini07(){ ssh z_farmville2_build@$MINI07 $@; }
+mini08(){ ssh z_farmville2_build@$MINI08 $@; }
+mini09(){ ssh z_farmville2_build@$MINI09 $@; }
 
 ssfstage() { echo -e "\033];fstage\007"; ssh ${VILLE}-staging-zcon-01.zc2.zynga.com $@; }
 #farm2-staging-web-fb-22
@@ -451,6 +462,16 @@ nonunicode(){ grep --color='auto' -Prn "[\x80-\xFF]" $1; }
 brobot-jira()
 {
 	curl -u $JIRA_ACCT:$JIRA_PSWD https://jira.corp.zynga.com/rest/api/latest/issue/FARMTWO-39652.json
+}
+
+jira-get()
+{
+	curl -u $1:$2 -X 'POST' -H "Content-Type: application/json" 'https://jira.corp.zynga.com/rest/api/latest/search' -d '{"jql":"reporter=vcutten AND status=open","fields":["id","key"]}' | jq '.'
+}
+
+jira-close()
+{
+	curl -i -u $1:$2 -X 'POST' -H "Content-Type: application/json" 'https://jira.corp.zynga.com/rest/api/latest/issue/1778018/transitions' -d '{ "transition": { "id" : "5" }, "fields": { "resolution": { "name": "Duplicate" } } }'
 }
 
 brobot-merge()
