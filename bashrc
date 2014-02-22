@@ -464,6 +464,16 @@ brobot-jira()
 	curl -u $JIRA_ACCT:$JIRA_PSWD https://jira.corp.zynga.com/rest/api/latest/issue/FARMTWO-39652.json
 }
 
+jira-get()
+{
+	curl -u $1:$2 -X 'POST' -H "Content-Type: application/json" 'https://jira.corp.zynga.com/rest/api/latest/search' -d '{"jql":"reporter=vcutten AND status=open","fields":["id","key"]}' | jq '.'
+}
+
+jira-close()
+{
+	curl -i -u $1:$2 -X 'POST' -H "Content-Type: application/json" 'https://jira.corp.zynga.com/rest/api/latest/issue/1778018/transitions' -d '{ "transition": { "id" : "5" }, "fields": { "resolution": { "name": "Duplicate" } } }'
+}
+
 brobot-merge()
 {
 	chat='Farm%202%20MERGE%20CHAT%20|%20Release%202012.08.13.01%20GH%20update%20|%20App:%20R1%20|%20Status:%20https://docs.google.com/a/zynga.com/spreadsheet/ccc?key=0AoX0nX5wfzbNdDd6Ql96NEVMU05aRTNMRUFrNlVtOVE#gid=186'
