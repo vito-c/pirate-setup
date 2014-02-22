@@ -736,3 +736,15 @@ loadBlobToStage()
 }
 
 #source ~/.pirate-setup/itermbkg
+# perforce commands
+diff-dev() 
+{
+	diff <(find ../dev -name $1 -exec md5 {} + | gsed 's|./dev||g') <(find . -name $1 -exec md5 {} +)
+}
+
+p4-art-cleanup() 
+{ 
+	for type in {"controller","mask","meta","png","psd","xml","fbx","anim","jpg","prefab","json","mat","tga","properties"}; do 
+		p4 reopen -c $1 //farm3/....$type;
+	done; 
+}
