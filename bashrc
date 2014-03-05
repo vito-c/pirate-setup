@@ -10,6 +10,7 @@ export HOSTNAME=$(hostname)
 ##
 ## Android SDK
 ##
+# xml sel -t -v '/items/item[@autocomplete="d*"]/title' ./address.xml
 export ANDROID_HOME=/usr/local/opt/android-sdk
 export ANDROID_NDK=/usr/local/opt/android-ndk
 export HOMEBREW_GITHUB_API_TOKEN="9a68042998770190facf2aedeab4a1794ac9a36f"
