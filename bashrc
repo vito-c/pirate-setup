@@ -471,7 +471,8 @@ jira-get()
 
 jira-close()
 {
-	curl -i -u $1:$2 -X 'POST' -H "Content-Type: application/json" 'https://jira.corp.zynga.com/rest/api/latest/issue/1778018/transitions' -d '{ "transition": { "id" : "5" }, "fields": { "resolution": { "name": "Duplicate" } } }'
+	curl -i -u $1:$2 -X 'POST' -H "Content-Type: application/json" 'https://jira.corp.zynga.com/rest/api/latest/issue/1778018/transitions' -d '{ "update": { "comment": [ { "add": { "body":"Resolved by farmbot" } } ] }, "transition": { "id" : "5" }, "fields": { "resolution": { "name": "Fixed" } } }'
+	#curl -i -u $1:$2 -X 'POST' -H "Content-Type: application/json" 'https://jira.corp.zynga.com/rest/api/latest/issue/1778018/transitions' -d '{ "transition": { "id" : "5" }, "fields": { "resolution": { "name": "Duplicate" } } }'
 }
 
 brobot-merge()
@@ -677,6 +678,13 @@ manage_allApps()
 	done;
 }
 
+test_v2d2()
+{
+	GRAPH=https://graph.facebook.com;
+	TOKEN=$(curl -F type=client_cred -F client_id=$FB_APP_V2D2 -F client_secret=$FB_SEC_V2D2 -F grant_type=client_credentials $GRAPH/oauth/access_token | sed -nE 's|access_token=(.*)$|\1|p');
+	echo curl -F 'name=test' -F 'description=test group fun' -F 'privacy=secret' -F 'admin=true' $GRAPH/$FB_APP_V2D2/groups?access_token=$TOKEN;
+}
+
 grepjson()
 { 
 	find . -name .json -o -type f -exec grep --color=always "$@" /dev/null {} +; 
@@ -758,6 +766,8 @@ loadBlobToStage()
 
 #source ~/.pirate-setup/itermbkg
 # perforce commands
+export DEV=$HOME/workrepos/farm3/branches/dev/src;
+export dev=$DEV;
 diff-dev() 
 {
 	diff <(find ../dev -name $1 -exec md5 {} + | gsed 's|./dev||g') <(find . -name $1 -exec md5 {} +)
@@ -768,4 +778,98 @@ p4-art-cleanup()
 	for type in {"controller","mask","meta","png","psd","xml","fbx","anim","jpg","prefab","json","mat","tga","properties"}; do 
 		p4 reopen -c $1 //farm3/....$type;
 	done; 
+}
+
+getblob()
+{
+	ZID="37114529746";
+	BLOB="player";
+	APPID="5000880"; 
+	if [[ $1 != "" ]]; then ZID="$1"; fi;
+	if [[ $2 != "" ]]; then BLOB="$2"; fi;
+	if [[ $3 != "" ]]; then APPID="$3"; fi;
+	#echo "params: $ZID $BLOB $APPID";
+	ZAPI="https://api.zynga.com"
+	STORAGE="storage/v1/app/$APPID/blob/$BLOB/user/$ZID"
+	export RAW=$(curl -s -X 'GET' "$ZAPI/$STORAGE" -H "app-id:$APPID" -H 'auth-type:app');
+	export CAS=$(echo $RAW | jq ".data.$BLOB[\"$ZID\"].data.cas" | tr -d '"' );
+	DATA=$( echo $RAW | jq ".data.$BLOB[\"$ZID\"].data.blob" | sed 's|\\"|"|g' | gsed -E 's/(^"|"$)|//g' );
+	echo $DATA
+}
+
+setblob()
+{
+	#curl -i -X 'PUT' 'https://api.zynga.com/storage/v1/app/5000880/blob/player/user/37114529746' -H 'app-id:5000880' -H 'auth-type:app' -H 'Content-Type: application/json' -d '{ "payload":{ "cas": "'$CAS'", "value":"'"$(getblob  | jq '(.resources[] | select(.id == "consu_ribbon" ) | .amount)=5000 | .leaderboardName="GodFather"' | gsed 's|"|\\"|g' | xargs | gsed 's|"|\\"|g')"'"}}'
+	echo "no op";
+}
+
+getleaderboards()
+{
+	ZID="37114529746";
+	BOARD="countyfair-dev4";
+	START=0;
+	END=40;
+	APPID="5000880"; 
+	if [[ -n ${1+_} ]]; then ZID="$1"; fi;
+	if [[ -n ${2+_} ]]; then BOARD="$2"; fi;
+	if [[ -n ${3+_} ]]; then START="$3"; fi;
+	if [[ -n ${4+_} ]]; then END="$4"; fi;
+	if [[ -n ${5+_} ]]; then APPID="$5"; fi;
+	ZAPI="https://api.zynga.com"
+	STORAGE="leaderboards/v2/app/$APPID/leaderboard/$BOARD/id/$ZID?after=$END&rank=$START&extra=true"
+	export RAW=$(curl -s -X 'GET' "$ZAPI/$STORAGE" -H "app-id:$APPID" -H 'auth-type:app');
+	echo $RAW
+}
+
+getleaderboardPlayer()
+{
+	ZID="37114529746";
+	APPID="5000880"; 
+	if [[ -n ${1+_} ]]; then ZID="$1"; fi;
+	if [[ -n ${2+_} ]]; then APPID="$2"; fi;
+	ZAPI="https://api.zynga.com"
+	STORAGE="leaderboards/v2/app/$APPID/id/$ZID?extra=true"
+	export RAW=$(curl -s -X 'GET' "$ZAPI/$STORAGE" -H "app-id:$APPID" -H 'auth-type:app');
+	echo $RAW
+}
+
+setleaderboardPlayer()
+{
+	ZID="37114529746";
+	BOARD="countyfair-dev4";
+	APPID="5000880"; 
+	if [[ -n ${2+_} ]]; then ZID="$2"; fi;
+	if [[ -n ${3+_} ]]; then BOARD="$3"; fi;
+	if [[ -n ${4+_} ]]; then APPID="$4"; fi;
+	ZAPI="https://api.zynga.com"
+	STORAGE="leaderboards/v2/app/$APPID/leaderboard/$BOARD/id/$ZID"
+	curl -s -X 'PUT' "$ZAPI/$STORAGE" -H "app-id:$APPID" -H 'auth-type:app' -H 'Content-Type: application/json'  -d @-
+}
+
+readtest()
+{ 
+	if [ -n "${*+_}" ]; then
+		printf '***%s***\n' "$@";
+	else
+		read; printf '***%s***\n' "$REPLY";
+	fi;
+}
+#foo(){ if [[ -z ${*+_} ]]; then read; printf '***%s***\n' "$REPLY"; else printf '+++%s+++\n' "$*"; echo $*; echo $2; fi; }; foo "" "world";
+#foo(){ if [[ -z ${*+_} ]]; then while read line; do printf "$line" | gsed 's/l/d/g'; done; else printf '+++%s+++\n' "$*"; fi; }; echo "hello world" | foo
+jsonify()
+{
+	if [[ -z ${*+_} ]]; then 
+		gsed -E 's|\\"|"|g; s/(^"|"$)//g' | jq '.';
+	else
+		printf "$*" | gsed -E 's|\\"|"|g; s/(^"|"$)//g' | jq '.';
+	fi;
+}
+
+jsonstringy()
+{
+	if [[ -z ${*+_} ]]; then 
+		jq -c '.' | gsed 's|"|\\"|g; s|^{|"{|g; s|}$|}"|g';
+	else
+		printf "$*" | jq -c '.' | gsed 's|"|\\"|g; s|^{|"{|g; s|}$|}"|g';
+	fi;
 }
