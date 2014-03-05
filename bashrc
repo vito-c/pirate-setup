@@ -142,7 +142,7 @@ if [[ $(uname) =~ Darwin ]]; then
 #   echo "error: Not a number" >&2; exit 1
 #fi
 
-		if [[ "$(pwd -P)" == "$HOME/workrepos/mobile"* ]]; then
+		if [[ "$(pwd -P)" == "$HOME/workrepos/farm3/branches/dev/src/"* ]]; then
 			echo -e "\033];UNITY\007"
 			if [[ -f "$1" ]]; then 
 				command vim --servername UNITY --remote-silent "$@";
@@ -756,4 +756,28 @@ loadBlobToStage()
 		http://farm2-staging-admin-01.zc2.zynga.com:8966/api.php
 }
 
+#takes in a file name and a destination path
+p4move()
+{
+	find . -iname $1 -exec sh -c 'p4 move {} '$2'/$(basename {} )' \;
+}
+barncopy()
+{
+	find . -iname $1 -exec sh -c 'file={}; 
+		dir=/Users/vcutten/workrepos/farm3/branches/dev/src/FarmMobile/${file#./*};
+		if [ ! -d ${dir} ]; then mkdir -p ${dir}; echo "created ${dir}"; fi;
+		cp ${file} /Users/vcutten/workrepos/farm3/branches/dev/src/FarmMobile/${file#./*};' \;
+}
+
+#function __p4_find_command() {
+#   for file in $(find . -type f -iname $2); do
+#       p4 $1 $file
+#   done
+#}
+#
+#alias p4o='p4 opened'
+#alias p4og='p4 opened | grep $*'
+#alias p4e='__p4_find_command edit $*'
+#alias p4d='__p4_find_command delete $*'
+#alias p4r='__p4_find_command revert $*'
 #source ~/.pirate-setup/itermbkg
