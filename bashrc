@@ -105,7 +105,13 @@ if [[ $(uname) =~ Darwin ]]; then
 		fi
 	}
 
-	vb() { vim $@ ~/.pirate-setup/bashrc; }
+	vb() 
+	{ 
+		echo -e "\033];BASHRC\007";
+		#trap 'echo -e "\033];bash\007"' SIGTERM SIGKILL SIGQUIT
+		trap 'echo -e "\033];bash\007";' EXIT
+		command /usr/local/bin/vim $@ ~/.pirate-setup/bashrc;
+	}
 	vg() { vim $@ ~/.pirate-setup/gitconfig; }
 	vv() { vim $@ ~/.vim/vimrc; }
 	cb() { source ~/.bashrc; }
