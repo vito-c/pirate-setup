@@ -125,6 +125,19 @@ if [[ $(uname) =~ Darwin ]]; then
 	}
 	ff() { 
 		if [[ "$2" == "" ]]; then 
+			type='*.*';
+		else
+			type='*.'"$2";
+		fi
+		#echo "root: $1  stem: $type"
+		if [[ "$3" == "" ]]; then 
+			find . \( -name .\*~ -o -name \*.meta -prune \) -o -iname "$1""$type" -print; 
+		else
+			find "$3" \( -name .\*~ -o -name \*.meta -prune \) -o -iname "$1""$type" -print; 
+		fi
+	}
+	fc() { 
+		if [[ "$2" == "" ]]; then 
 			type='*.cs';
 		else
 			type='*.'"$2";
@@ -184,8 +197,12 @@ PATH="/usr/local/bin:$PATH"
 #PATH=$PATH:$PLAN9/bin
 #export PATH="~/.pirate-setup/bin:/usr/sbin/user:$FLEX_HOME/bin:$PATH:$PLAN9/bin:/usr/local/share/npm/bin:/usr/local/Cellar/node/0.10.7/lib/node_modules/npm/bin/node-gyp-bin:/usr/local/bin"
 #export HOSTSTUB=$(hostStub);                                                                                      
-export PS1="\[\e[36;1m\][\A] \[\e[0;35m\]$HOSTSTUB \[\e[31;1m\]\w> \[\e[0m\]"                                     
-export PS2="\[\e[31;1m\]> \[\e[0m\]"                                                                              
+
+#export PS1="\[\e[36;1m\][\A] \[\e[0;35m\]$HOSTSTUB \[\e[31;1m\]\w> \[\e[0m\]"                                     
+#export PS2="\[\e[31;1m\]> \[\e[0m\]"                                                                              
+export PS1="\[\e[36;1m\][\[\e[0;35m\]$HOSTSTUB\[\e[36;1m\]] \[\e[0;35m\]$HOSTSTUB \[\e[31;1m\]\w> \[\e[0m\]"
+export PS2="\[\e[31;1m\]> \[\e[0m\]"
+
 #echo -e "\033];$HOSTSTUB\007";
 if [ -f /usr/local/git/contrib/completion/git-completion.bash ]; then
 	. /usr/local/git/contrib/completion/git-completion.bash
@@ -812,9 +829,9 @@ p4-art-cleanup()
 
 getblob()
 {
-	ZID="37114529746";
+	ZID="${LZID}";
 	BLOB="player";
-	APPID="5000880"; 
+	APPID="${FVN_ZLIVE_APP}"; 
 	if [[ $1 != "" ]]; then ZID="$1"; fi;
 	if [[ $2 != "" ]]; then BLOB="$2"; fi;
 	if [[ $3 != "" ]]; then APPID="$3"; fi;
@@ -829,17 +846,17 @@ getblob()
 
 setblob()
 {
-	#curl -i -X 'PUT' 'https://api.zynga.com/storage/v1/app/5000880/blob/player/user/37114529746' -H 'app-id:5000880' -H 'auth-type:app' -H 'Content-Type: application/json' -d '{ "payload":{ "cas": "'$CAS'", "value":"'"$(getblob  | jq '(.resources[] | select(.id == "consu_ribbon" ) | .amount)=5000 | .leaderboardName="GodFather"' | gsed 's|"|\\"|g' | xargs | gsed 's|"|\\"|g')"'"}}'
+	#curl -i -X 'PUT' 'https://api.zynga.com/storage/v1/app/${FVN_ZLIVE_APP}/blob/player/user/${LZID}' -H 'app-id:${FVN_ZLIVE_APP}' -H 'auth-type:app' -H 'Content-Type: application/json' -d '{ "payload":{ "cas": "'$CAS'", "value":"'"$(getblob  | jq '(.resources[] | select(.id == "consu_ribbon" ) | .amount)=5000 | .leaderboardName="GodFather"' | gsed 's|"|\\"|g' | xargs | gsed 's|"|\\"|g')"'"}}'
 	echo "no op";
 }
 
 getleaderboards()
 {
-	ZID="37114529746";
+	ZID="${LZID}";
 	BOARD="countyfair-dev4";
 	START=0;
 	END=40;
-	APPID="5000880"; 
+	APPID="${FVN_ZLIVE_APP}"; 
 	if [[ -n ${1+_} ]]; then ZID="$1"; fi;
 	if [[ -n ${2+_} ]]; then BOARD="$2"; fi;
 	if [[ -n ${3+_} ]]; then START="$3"; fi;
@@ -853,8 +870,8 @@ getleaderboards()
 
 getleaderboardPlayer()
 {
-	ZID="37114529746";
-	APPID="5000880"; 
+	ZID="${LZID}";
+	APPID="${FVN_ZLIVE_APP}"; 
 	if [[ -n ${1+_} ]]; then ZID="$1"; fi;
 	if [[ -n ${2+_} ]]; then APPID="$2"; fi;
 	ZAPI="https://api.zynga.com"
@@ -865,13 +882,12 @@ getleaderboardPlayer()
 
 setleaderboardPlayer()
 {
-	ZID="37114529746";
+	ZID="${LZID}";
 	BOARD="countyfair-dev4";
-	APPID="5000880"; 
+	APPID="${FVN_ZLIVE_APP}"; 
 	if [[ -n ${2+_} ]]; then ZID="$2"; fi;
 	if [[ -n ${3+_} ]]; then BOARD="$3"; fi;
 	if [[ -n ${4+_} ]]; then APPID="$4"; fi;
-	ZAPI="https://api.zynga.com"
 	STORAGE="leaderboards/v2/app/$APPID/leaderboard/$BOARD/id/$ZID"
 	curl -s -X 'PUT' "$ZAPI/$STORAGE" -H "app-id:$APPID" -H 'auth-type:app' -H 'Content-Type: application/json'  -d @-
 }
@@ -902,4 +918,52 @@ jsonstringy()
 	else
 		printf "$*" | jq -c '.' | gsed 's|"|\\"|g; s|^{|"{|g; s|}$|}"|g';
 	fi;
+}
+
+#App Specific
+FVN_ZLIVE_SEC=$(pattern="'ZLIVE_APP_SECRET' *, *'([a-z0-9]*)'"; grep -oE "$pattern" ~/workrepos/mobile/admin/farm2mobile/config.php | sed -E "s|$pattern|\1|g")
+FVN_ZLIVE_APP=5000880;
+ZAPI="https://api.zynga.com"
+LZID=$(strings ~/Library/Preferences/unity.Zynga\ Inc..FarmVille\ 3.plist | perl -ne '/"zid":([^,]*),/xg && print "$1\n"' | uniq)
+
+zlive_identities()
+{
+	ZID="${LZID}";
+	APPID="${FVN_ZLIVE_APP}"; 
+	SNIDS="1,22,31,104";
+	if [[ -n ${1+_} ]]; then ZID="$1"; fi;
+	if [[ -n ${2+_} ]]; then APPID="$2"; fi;
+	if [[ -n ${2+_} ]]; then SNIDS="$2"; fi;
+	if [[ -n ${4+_} ]]; then ="$4"; fi;
+
+	secret="$FVN_ZLIVE_SEC";
+	echo $req
+	req="p={\"c\": [{\"m\": \"identities.get\", \"al\": {\"zids\":[${ZID}], \"snids\":[$SNIDS]}}], \"t\": {\"appId\": \"$APPID\", \"snId\": \"1\", \"secret\": \"$secret\"}}";
+	curl -s -d v=1.2 -d "$req" $ZAPI | jq '.'
+}
+
+zlive_disassociate()
+{
+
+	ZID="${LZID}";
+	APPID="${FVN_ZLIVE_APP}"; 
+	SNIDS="1,22,31,104";
+	if [[ -n ${1+_} ]]; then ZID="$1"; fi;
+	if [[ -n ${2+_} ]]; then APPID="$2"; fi;
+	if [[ -n ${2+_} ]]; then SNIDS="$2"; fi;
+
+	secret="$FVN_ZLIVE_SEC";
+
+	#if [[ "stage" -eq "$6" ]]
+	#then
+	#	host="http://api.staging.zynga.com";
+	#	appId="_YOUR_APP_ID_";
+	#	secret="_YOUR_APP_SECRET_";
+	#fi
+
+
+	req="p={\"c\": [{\"m\": \"identities.appDisassociate\", \"al\": {\"zid\":$ZID}], \"t\": {\"appId\": \"$APPID\", \"snId\": \"1\", \"secret\":\"$secret\"}}";
+	echo $req
+
+	curl -s -d v=1.2 -d "$req" $ZAPI | jq '.'
 }
