@@ -4,19 +4,28 @@
 #                                          Core CPU Values (Environment Variables                                           #
 #                                                                                                                           #
 #############################################################################################################################
+# xml sel -t -v '/items/item[@autocomplete="d*"]/title' ./address.xml
+
+##
+## Java And Ant OPTS
+##
 export ANT_OPTS="-Xmx1024m -Xms512m -XX:MaxPermSize=512m"
 export JAVA_OPTS="-Xmx2024m -Xms1024m -XX:MaxPermSize=512m"
 export HOSTNAME=$(hostname)
+
 ##
 ## Android SDK
 ##
 export ANDROID_HOME=/usr/local/opt/android-sdk
 export ANDROID_NDK=/usr/local/opt/android-ndk
 export HOMEBREW_GITHUB_API_TOKEN="9a68042998770190facf2aedeab4a1794ac9a36f"
+if [[ -f /Users/vcutten/Library/Python/2.7/lib/python/site-packages/powerline/bindings/bash/powerline.sh ]]; then
+	source '/Users/vcutten/Library/Python/2.7/lib/python/site-packages/powerline/bindings/bash/powerline.sh'
+fi
 
-bind '\C-Space':complete
-bind '\C-i':menu-complete
-bind '"\ew": backward-kill-word'
+#bind '\C-Space':complete
+#bind '\C-i':menu-complete
+#bind '"\ew": backward-kill-word'
 
 # Override defaults
 #export HISTSIZE=3600
@@ -31,10 +40,14 @@ PROMPT_COMMAND="history -n; history -w; history -c; history -r; $PROMPT_COMMAND"
 PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
 export HISTSIZE PROMPT_COMMAND HISTCONTROL
 shopt -s histappend
+shopt -s extglob
+shopt -s cdspell
+shopt -s nocaseglob
+shopt -u expand_aliases
+shopt -s globstar
 
 
 #export SCALA_HOME=/Users/vcutten/workrepos/apparat/scala-2.8.2.final
-#export PYTHONPATH=/usr/lib/python2.6/site-packages
 
 #Enable Colors
 #export CLICOLOR=1
@@ -59,7 +72,9 @@ unalias ls 2>/dev/null
 if [[ $(uname) =~ Darwin ]]; then
 	# export FLEX_HOME="/usr/local/bin/flexsdks/4.6.0.23201B"
 	# export PAGER=vimpager
-	source ~/.pirate-setup/secrets
+	if [[ -f ~/.pirate-setup/secrets ]]; then 
+		source ~/.pirate-setup/secrets
+	fi
 	export FLEX_HOME="/usr/local/bin/flexsdks/4.6.0.23201Bair3.5"
 	export vimdir=$HOME/.vim
 	export EDITOR=/Applications/MacVim.app/Contents/MacOS/Vim
@@ -85,6 +100,7 @@ if [[ $(uname) =~ Darwin ]]; then
 	enable-spotlight(){
 		sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.metadata.mds.plist
 	}
+
 	omnisharp() {
 		if [[ "$1" == "" ]]; then 
 			slnloc=~/workrepos/mobile/FarmMobile/FarmMobile.sln;
@@ -109,7 +125,7 @@ if [[ $(uname) =~ Darwin ]]; then
 	{ 
 		echo -e "\033];BASHRC\007";
 		#trap 'echo -e "\033];bash\007"' SIGTERM SIGKILL SIGQUIT
-		trap 'echo -e "\033];bash\007";' EXIT
+		#trap 'echo -e "\033];bash\007";' EXIT
 		command /usr/local/bin/vim $@ ~/.pirate-setup/bashrc;
 	}
 	vg() { vim $@ ~/.pirate-setup/gitconfig; }
@@ -192,16 +208,12 @@ fi
 
 export FCSH=$FLEX_HOME/bin/fcsh
 export PLAN9=/usr/local/plan9
-PATH="/usr/local/bin:$PATH"
-#export PATH="~/.pirate-setup/bin:/usr/sbin/user:$PATH:/usr/local/share/npm/bin:/usr/local/Cellar/node/0.10.7/lib/node_modules/npm/bin/node-gyp-bin"
-#PATH=$PATH:$PLAN9/bin
-#export PATH="~/.pirate-setup/bin:/usr/sbin/user:$FLEX_HOME/bin:$PATH:$PLAN9/bin:/usr/local/share/npm/bin:/usr/local/Cellar/node/0.10.7/lib/node_modules/npm/bin/node-gyp-bin:/usr/local/bin"
-#export HOSTSTUB=$(hostStub);                                                                                      
+PATH="/usr/local/bin:$PATH:/Users/vcutten/Library/Python/2.7/bin"
 
 #export PS1="\[\e[36;1m\][\A] \[\e[0;35m\]$HOSTSTUB \[\e[31;1m\]\w> \[\e[0m\]"                                     
 #export PS2="\[\e[31;1m\]> \[\e[0m\]"                                                                              
-export PS1="\[\e[36;1m\][\[\e[0;35m\]$HOSTSTUB\[\e[36;1m\]] \[\e[0;35m\]$HOSTSTUB \[\e[31;1m\]\w> \[\e[0m\]"
-export PS2="\[\e[31;1m\]> \[\e[0m\]"
+#export PS1="\[\e[36;1m\][\[\e[0;35m\]$HOSTSTUB\[\e[36;1m\]] \[\e[0;35m\]$HOSTSTUB \[\e[31;1m\]\w> \[\e[0m\]"
+#export PS2="\[\e[31;1m\]> \[\e[0m\]"
 
 #echo -e "\033];$HOSTSTUB\007";
 if [ -f /usr/local/git/contrib/completion/git-completion.bash ]; then
@@ -326,16 +338,11 @@ badassets()
 #		ls -lh !(Icon?) $1
 #	fi
 #}
-shopt -s extglob
-shopt -s cdspell
-shopt -s nocaseglob
-shopt -u expand_aliases
-shopt -s globstar
 
 #Execute Apple Scripts
-alias ttheme='osascript "$PATH_ASCRIPTS/SetTerminalTheme.scpt"'
-alias mbdesktop='osascript "$PATH_ASCRIPTS/SpacesMobile.scpt"'
-alias wrkdesktop='osascript "$PATH_ASCRIPTS/SpacesWork.scpt"'
+#alias ttheme='osascript "$PATH_ASCRIPTS/SetTerminalTheme.scpt"'
+#alias mbdesktop='osascript "$PATH_ASCRIPTS/SpacesMobile.scpt"'
+#alias wrkdesktop='osascript "$PATH_ASCRIPTS/SpacesWork.scpt"'
 
 #svn() { command svn "$@" | say; }
 #kickers
@@ -562,7 +569,6 @@ build-m17()
 
 copy-job()
 {
-#<<<<<<< HEAD
 #	JOB_NAME="$1"
 #	PASS="$2"
 #	TOKEN="2caddd33af1a18e53cee7645d82144e1"
@@ -579,7 +585,6 @@ copy-job()
 #
 #	target="http://vcutten:$pass@ci.farm2mobile.zynga.com:8080"
 #	destination="http://farm2mobile-build-master.zc2.zynga.com"
-#>>>>>>> a1f76f7f1ab30ac62ec16b013dfabd229c1e8f63
 	#Here is the job
 	curl -X GET "$target/job/$job_name/config.xml" -o tempconfig.xml
 
@@ -811,8 +816,8 @@ barncopy()
 #alias p4e='__p4_find_command edit $*'
 #alias p4d='__p4_find_command delete $*'
 #alias p4r='__p4_find_command revert $*'
-#source ~/.pirate-setup/itermbkg
 # perforce commands
+
 export DEV=$HOME/workrepos/farm3/branches/dev/src;
 export dev=$DEV;
 diff-dev() 
@@ -850,10 +855,18 @@ setblob()
 	echo "no op";
 }
 
-getleaderboards()
+leaderboard_settings()
 {
 	ZID="${LZID}";
-	BOARD="countyfair-dev4";
+	APPID="${FVN_ZLIVE_APP}"; 
+	ZAPI="https://api.zynga.com";
+	curl -s -X 'GET' "${ZAPI}/leaderboards/v2/app/${APPID}/settings" -H "app-id: ${APPID}" -H "player-id: ${ZID}" -H 'auth-type: app'
+}
+
+leaderboard_get()
+{
+	ZID="${LZID}";
+	BOARD="countyfair-dev6";
 	START=0;
 	END=40;
 	APPID="${FVN_ZLIVE_APP}"; 
@@ -868,7 +881,7 @@ getleaderboards()
 	echo $RAW
 }
 
-getleaderboardPlayer()
+leaderboard_get_player()
 {
 	ZID="${LZID}";
 	APPID="${FVN_ZLIVE_APP}"; 
@@ -880,16 +893,26 @@ getleaderboardPlayer()
 	echo $RAW
 }
 
-setleaderboardPlayer()
+leaderboard_set_player()
 {
 	ZID="${LZID}";
-	BOARD="countyfair-dev4";
+	BOARD="countyfair-dev6";
 	APPID="${FVN_ZLIVE_APP}"; 
 	if [[ -n ${2+_} ]]; then ZID="$2"; fi;
 	if [[ -n ${3+_} ]]; then BOARD="$3"; fi;
 	if [[ -n ${4+_} ]]; then APPID="$4"; fi;
 	STORAGE="leaderboards/v2/app/$APPID/leaderboard/$BOARD/id/$ZID"
 	curl -s -X 'PUT' "$ZAPI/$STORAGE" -H "app-id:$APPID" -H 'auth-type:app' -H 'Content-Type: application/json'  -d @-
+}
+
+leaderboard_cheat()
+{
+	topscore=$(getleaderboards | jq  '.data["countyfair-dev6"]["'${LZID}'"][0].score'); 
+	getleaderboardPlayer | 
+		jq '.data["'$LZID'"]["countyfair-dev6"][0]' |
+		jq '{extra, score, "tier":"level-low"}' |
+		jq '.score ='"$topscore"'' |
+		jq '.score += 4' | setleaderboardPlayer
 }
 
 readtest()
