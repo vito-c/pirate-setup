@@ -967,3 +967,5 @@ zlive_disassociate()
 
 	curl -s -d v=1.2 -d "$req" $ZAPI | jq '.'
 }
+
+#p4 opened -sc default | grep add | awk '{ print $1 }' | sed 's|//farm3/branches/dev/src/|./|g'
