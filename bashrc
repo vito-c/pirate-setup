@@ -861,7 +861,7 @@ leaderboard_getcheater_names()
 	BOARD="countyfair-dev10";
 	if [[ -n ${1+_} ]]; then ZID="$1"; fi;
 	if [[ -n ${2+_} ]]; then BOARD="$2"; fi;
-	leaderboard_get | jq -c '.data["'$BOARD'"]["'$LZID'"][] | {id: .id, ch: .extra|fromjson|.ch, name: .extra|fromjson|.name} | select( .ch == true ).name'
+	leaderboard_get_players | jq -c '.data["'$BOARD'"]["'$LZID'"][] | {id: .id, ch: .extra|fromjson|.ch, name: .extra|fromjson|.name} | select( .ch == true ).name'
 }
 
 leaderboard_getcheater_ids()
@@ -870,7 +870,7 @@ leaderboard_getcheater_ids()
 	BOARD="countyfair-dev10";
 	if [[ -n ${1+_} ]]; then ZID="$1"; fi;
 	if [[ -n ${2+_} ]]; then BOARD="$2"; fi;
-	leaderboard_get | jq -c '.data["'$BOARD'"]["'$LZID'"][] | {id: .id, ch: .extra|fromjson|.ch, name: .extra|fromjson|.name} | select( .ch == true ).id'
+	leaderboard_get_players | jq -c '.data["'$BOARD'"]["'$LZID'"][] | {id: .id, ch: .extra|fromjson|.ch, name: .extra|fromjson|.name} | select( .ch == true ).id'
 }
 
 leaderboard_settings()
@@ -881,7 +881,7 @@ leaderboard_settings()
 	curl -s -X 'GET' "${ZAPI}/leaderboards/v2/app/${APPID}/settings" -H "app-id: ${APPID}" -H "player-id: ${ZID}" -H 'auth-type: app'
 }
 
-leaderboard_get()
+leaderboard_get_players()
 {
 	ZID="${LZID}";
 	BOARD="countyfair-dev10";
@@ -895,6 +895,20 @@ leaderboard_get()
 	if [[ -n ${5+_} ]]; then APPID="$5"; fi;
 	ZAPI="https://api.zynga.com"
 	STORAGE="leaderboards/v2/app/$APPID/leaderboard/$BOARD/id/$ZID?after=$END&rank=$START&extra=true"
+	export RAW=$(curl -s -X 'GET' "$ZAPI/$STORAGE" -H "app-id:$APPID" -H 'auth-type:app');
+	echo $RAW
+}
+
+leaderboard_get()
+{
+	BOARD="countyfair-dev10";
+	START=0;
+	END=40;
+	APPID="${FVN_ZLIVE_APP}"; 
+	if [[ -n ${1+_} ]]; then BOARD="$1"; fi;
+	if [[ -n ${2+_} ]]; then APPID="$2"; fi;
+	ZAPI="https://api.zynga.com"
+	STORAGE="leaderboards/v2/app/$APPID/leaderboard/$BOARD?after=14&rank=0&tier=level-low";
 	export RAW=$(curl -s -X 'GET' "$ZAPI/$STORAGE" -H "app-id:$APPID" -H 'auth-type:app');
 	echo $RAW
 }
@@ -940,15 +954,15 @@ leaderboard_set_player()
 	curl -s -X 'PUT' "$ZAPI/$STORAGE" -H "app-id:$APPID" -H 'auth-type:app' -H 'Content-Type: application/json'  -d @-
 }
 
-leaderboard_cheat()
-{
-	topscore=$(leaderboard_get | jq  '.data["countyfair-dev10"]["'${LZID}'"][0].score'); 
-	leaderboard_get_player | 
-		jq '.data["'$LZID'"]["countyfair-dev10"][0]' |
-		jq '{extra, score, "tier":"level-low"}' |
-		jq '.score ='"$topscore"'' |
-		jq '.score += 4' | leaderboard_set_player
-}
+#leaderboard_cheat()
+#{
+#	topscore=$(leaderboard_get_players | jq  '.data["countyfair-dev10"]["'${LZID}'"][0].score'); 
+#	leaderboard_get_player | 
+#		jq '.data["'$LZID'"]["countyfair-dev10"][0]' |
+#		jq '{extra, score, "tier":"level-low"}' |
+#		jq '.score ='"$topscore"'' |
+#		jq '.score += 4' | leaderboard_set_player
+#}
 
 readtest()
 { 
