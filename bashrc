@@ -77,7 +77,7 @@ if [[ $(uname) =~ Darwin ]]; then
 	fi
 	export FLEX_HOME="/usr/local/bin/flexsdks/4.6.0.23201Bair3.5"
 	export vimdir=$HOME/.vim
-	export EDITOR=/Applications/MacVim.app/Contents/MacOS/Vim
+	export EDITOR=vim
 	if [[ $HOSTNAME =~ "vito-mbp" ]]; then                                                                           
 		export HOSTSTUB="vito-mbp";
 	elif [[ $HOSTNAME =~ "vito-tower" ]]; then
@@ -855,6 +855,24 @@ setblob()
 	echo "no op";
 }
 
+leaderboard_getcheater_names()
+{
+	ZID="${LZID}";
+	BOARD="countyfair-dev10";
+	if [[ -n ${1+_} ]]; then ZID="$1"; fi;
+	if [[ -n ${2+_} ]]; then BOARD="$2"; fi;
+	leaderboard_get | jq -c '.data["'$BOARD'"]["'$LZID'"][] | {id: .id, ch: .extra|fromjson|.ch, name: .extra|fromjson|.name} | select( .ch == true ).name'
+}
+
+leaderboard_getcheater_ids()
+{
+	ZID="${LZID}";
+	BOARD="countyfair-dev10";
+	if [[ -n ${1+_} ]]; then ZID="$1"; fi;
+	if [[ -n ${2+_} ]]; then BOARD="$2"; fi;
+	leaderboard_get | jq -c '.data["'$BOARD'"]["'$LZID'"][] | {id: .id, ch: .extra|fromjson|.ch, name: .extra|fromjson|.name} | select( .ch == true ).id'
+}
+
 leaderboard_settings()
 {
 	ZID="${LZID}";
@@ -866,7 +884,7 @@ leaderboard_settings()
 leaderboard_get()
 {
 	ZID="${LZID}";
-	BOARD="countyfair-dev6";
+	BOARD="countyfair-dev10";
 	START=0;
 	END=40;
 	APPID="${FVN_ZLIVE_APP}"; 
@@ -878,6 +896,23 @@ leaderboard_get()
 	ZAPI="https://api.zynga.com"
 	STORAGE="leaderboards/v2/app/$APPID/leaderboard/$BOARD/id/$ZID?after=$END&rank=$START&extra=true"
 	export RAW=$(curl -s -X 'GET' "$ZAPI/$STORAGE" -H "app-id:$APPID" -H 'auth-type:app');
+	echo $RAW
+}
+
+leaderboard_delete_all_cheaters()
+{
+	for id in $(leaderboard_getcheater_ids | tr -d '"'); do leaderboard_delete_player $id; done
+}
+leaderboard_delete_player()
+{
+	ZID="${LZID}";
+	BOARD="countyfair-dev10";
+	APPID="${FVN_ZLIVE_APP}"; 
+	if [[ -n ${1+_} ]]; then ZID="$1"; fi;
+	if [[ -n ${2+_} ]]; then BOARD="$2"; fi;
+	ZAPI="https://api.zynga.com"
+	STORAGE="leaderboards/v2/app/$APPID/leaderboard/$BOARD/id/$ZID/period_offset/0"
+	export RAW=$(curl -s -X 'DELETE' "$ZAPI/$STORAGE" -H "player-id:${ZID}" -H "app-id:$APPID" -H 'auth-type:app');
 	echo $RAW
 }
 
@@ -896,7 +931,7 @@ leaderboard_get_player()
 leaderboard_set_player()
 {
 	ZID="${LZID}";
-	BOARD="countyfair-dev6";
+	BOARD="countyfair-dev10";
 	APPID="${FVN_ZLIVE_APP}"; 
 	if [[ -n ${2+_} ]]; then ZID="$2"; fi;
 	if [[ -n ${3+_} ]]; then BOARD="$3"; fi;
@@ -907,12 +942,12 @@ leaderboard_set_player()
 
 leaderboard_cheat()
 {
-	topscore=$(getleaderboards | jq  '.data["countyfair-dev6"]["'${LZID}'"][0].score'); 
-	getleaderboardPlayer | 
-		jq '.data["'$LZID'"]["countyfair-dev6"][0]' |
+	topscore=$(leaderboard_get | jq  '.data["countyfair-dev10"]["'${LZID}'"][0].score'); 
+	leaderboard_get_player | 
+		jq '.data["'$LZID'"]["countyfair-dev10"][0]' |
 		jq '{extra, score, "tier":"level-low"}' |
 		jq '.score ='"$topscore"'' |
-		jq '.score += 4' | setleaderboardPlayer
+		jq '.score += 4' | leaderboard_set_player
 }
 
 readtest()
