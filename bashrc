@@ -69,13 +69,13 @@ export HOMEBREW_EDITOR=vim
 unalias ll 2>/dev/null
 unalias ls 2>/dev/null
 #TODO: export your java home too brah
-if [[ $(uname) =~ Darwin ]]; then
+if [[ $(uname) =~ Darwin || $(uname) =~ FeeBSD ]]; then
 	# export FLEX_HOME="/usr/local/bin/flexsdks/4.6.0.23201B"
 	# export PAGER=vimpager
 	if [[ -f ~/.pirate-setup/secrets ]]; then 
 		source ~/.pirate-setup/secrets
 	fi
-	export FLEX_HOME="/usr/local/bin/flexsdks/4.6.0.23201Bair3.5"
+	export FLEX_HOME=/Users/vcutten/local/flash/flex/sdk
 	export vimdir=$HOME/.vim
 	export EDITOR=vim
 	if [[ $HOSTNAME =~ "vito-mbp" ]]; then                                                                           
@@ -147,9 +147,9 @@ if [[ $(uname) =~ Darwin ]]; then
 		fi
 		#echo "root: $1  stem: $type"
 		if [[ "$3" == "" ]]; then 
-			find . \( -name .\*~ -o -name \*.meta -prune \) -o -iname "$1""$type" -print; 
+			find . \( -name .\*~ -o -name \*.meta -prune -o -name \*.prefab -prune \) -o -iname "$1""$type" -print; 
 		else
-			find "$3" \( -name .\*~ -o -name \*.meta -prune \) -o -iname "$1""$type" -print; 
+			find "$3" \( -name .\*~ -o -name \*.meta -prune -o -name \*.prefab -prune \) -o -iname "$1""$type" -print; 
 		fi
 	}
 	fc() { 
@@ -1038,6 +1038,13 @@ zlive_disassociate()
 	echo $req
 
 	curl -s -d v=1.2 -d "$req" $ZAPI | jq '.'
+}
+
+count_filetypes()
+{
+	#find . -iname \*.meta -prune -o -iname \*.png -prune -o -iname \*.anim -prune -o -iname \*.unity -prune -o -iname \*.jpg -prune -o -iname \*.wav -prune -o -iname \*.prefab -prune -o -iname \*.fbx -prune -o -iname \*.asset -prune -o -iname \*.mp3 -prune -o -iname \*.tga -prune -o -iname \*.psd -prune -o -iname \*.mat -prune -o -type d -iname Temp -prune -o -type d -iname metadata -prune -o -type f -print | awk -F . '{print $NF}' | sort | uniq -c | sort -n
+	findignores=$(cat ~/.pirate-setup/find-ignores.json | jq '.commands = ["-iname *." + .filetypes[] + " -prune -o"] + ["-type d -iname " + .directories[] + " -prune -o"] | .commands[]' | tr -d '"' | tr '\n' ' ');
+	find . $findignores -type f -print | awk -F . '{print $NF}' | sort | uniq -c | sort -n
 }
 
 #p4 opened -sc default | grep add | awk '{ print $1 }' | sed 's|//farm3/branches/dev/src/|./|g'
