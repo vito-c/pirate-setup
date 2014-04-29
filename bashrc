@@ -1001,10 +1001,16 @@ jsonstringy()
 }
 
 #App Specific
-FVN_ZLIVE_SEC=$(pattern="'ZLIVE_APP_SECRET' *, *'([a-z0-9]*)'"; grep -oE "$pattern" ~/workrepos/mobile/admin/farm2mobile/config.php | sed -E "s|$pattern|\1|g")
-FVN_ZLIVE_APP=5000880;
-ZAPI="https://api.zynga.com"
-LZID=$(strings ~/Library/Preferences/unity.Zynga\ Inc..FarmVille\ 4.plist | perl -ne '/"zid":([^,]*),/xg && print "$1\n"' | uniq)
+#FVN_ZLIVE_SEC=$(pattern="'ZLIVE_APP_SECRET' *, *'([a-z0-9]*)'"; grep -oE "$pattern" ~/workrepos/mobile/admin/farm2mobile/config.php | sed -E "s|$pattern|\1|g")
+#FVN_ZLIVE_APP=5000880;
+#ZAPI="https://api.zynga.com"
+#LZID=$(strings ~/Library/Preferences/unity.Zynga\ Inc..FarmVille\ 4.plist | perl -ne '/"zid":([^,]*),/xg && print "$1\n"' | uniq)
+if [[ -f ~/workrepos/mobile/admin/farm2mobile/config.php ]]; then
+	FVN_ZLIVE_SEC=$(pattern="'ZLIVE_APP_SECRET' *, *'([a-z0-9]*)'"; grep -oE "$pattern" ~/workrepos/mobile/admin/farm2mobile/config.php | sed -E "s|$pattern|\1|g")
+	FVN_ZLIVE_APP=5000880;
+	ZAPI="https://api.zynga.com"
+	LZID=$(strings ~/Library/Preferences/unity.Zynga\ Inc..FarmVille\ 3.plist | perl -ne '/"zid":([^,]*),/xg && print "$1\n"' | uniq)
+fi
 
 zlive_identities()
 {
