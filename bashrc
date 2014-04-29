@@ -121,7 +121,7 @@ if [[ $(uname) =~ Darwin || $(uname) =~ FeeBSD ]]; then
 		fi
 	}
 
-	vb() 
+	eb() 
 	{ 
 		echo -e "\033];BASHRC\007";
 		#trap 'echo -e "\033];bash\007"' SIGTERM SIGKILL SIGQUIT
@@ -129,7 +129,7 @@ if [[ $(uname) =~ Darwin || $(uname) =~ FeeBSD ]]; then
 		command /usr/local/bin/vim $@ ~/.pirate-setup/bashrc;
 	}
 	vg() { vim $@ ~/.pirate-setup/gitconfig; }
-	vv() { vim $@ ~/.vim/vimrc; }
+	ev() { vim $@ ~/.vim/vimrc; }
 	cb() { source ~/.bashrc; }
 	ls() { command ls -G "$@"; }
 	fn() { command find . -iname "$@"; }
@@ -138,6 +138,9 @@ if [[ $(uname) =~ Darwin || $(uname) =~ FeeBSD ]]; then
 	fw() {
 		file='*'"$1"'*'
 		ff $file $2 $3
+	}
+	gf() {
+		find . -name \*.cs -exec grep -in $@ {} +
 	}
 	ff() { 
 		if [[ "$2" == "" ]]; then 
@@ -177,7 +180,7 @@ if [[ $(uname) =~ Darwin || $(uname) =~ FeeBSD ]]; then
 #   echo "error: Not a number" >&2; exit 1
 #fi
 
-		if [[ "$(pwd -P)" == "$HOME/workrepos/farm3/branches/dev/src/"* ]]; then
+		if [[ "$(pwd -P)" =~ $HOME/workrepos/farm3/dev.* ]]; then
 			echo -e "\033];UNITY\007"
 			if [[ -f "$1" ]]; then 
 				command vim --servername UNITY --remote-silent "$@";
@@ -198,7 +201,7 @@ else
 	if [[ $HOSTSTUB == "" ]]; then
     	export HOSTSTUB=$(hostname -s);
 	fi
-	vb() { vim $@ ~/.bash_awesome; }
+	eb() { vim $@ ~/.bash_awesome; }
 	cb() { source ~/.bash_awesome; }
 	ls() { command ls --color=always "$@"; }
 	grep() { command grep --color=always "$@"; }
@@ -457,6 +460,11 @@ trcphp()
 vdisplay(){ (Xvfb :$@ &); export DISPLAY=:$@; }
 
 listenPort(){ sudo ngrep -d lo0 -W byline port $@; }
+
+ldapquick-ad()
+{
+	ldapsearch -x -D 'cn=Vito Cutten,cn=Users,dc=corp,dc=zynga,dc=com' -W -h sfo-dc03.corp.zynga.com -b "dc=corp,dc=zynga,dc=com" "(sAMAccountName=$1)" telephoneNumber mail sn givenName
+}
 
 ldapquick()
 {
@@ -996,7 +1004,7 @@ jsonstringy()
 FVN_ZLIVE_SEC=$(pattern="'ZLIVE_APP_SECRET' *, *'([a-z0-9]*)'"; grep -oE "$pattern" ~/workrepos/mobile/admin/farm2mobile/config.php | sed -E "s|$pattern|\1|g")
 FVN_ZLIVE_APP=5000880;
 ZAPI="https://api.zynga.com"
-LZID=$(strings ~/Library/Preferences/unity.Zynga\ Inc..FarmVille\ 3.plist | perl -ne '/"zid":([^,]*),/xg && print "$1\n"' | uniq)
+LZID=$(strings ~/Library/Preferences/unity.Zynga\ Inc..FarmVille\ 4.plist | perl -ne '/"zid":([^,]*),/xg && print "$1\n"' | uniq)
 
 zlive_identities()
 {
