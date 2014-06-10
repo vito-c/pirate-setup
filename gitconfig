@@ -46,7 +46,7 @@
 [difftool]
 	prompt = true
 [init]
-	templatedir = ~/.git_template
+	#templatedir = ~/.git_template
 [hub]
 	host = github-ca.corp.zynga.com
 [github]

@@ -9,6 +9,8 @@
 ##
 ## Java And Ant OPTS
 ##
+export LC_CTYPE=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
 export ANT_OPTS="-Xmx1024m -Xms512m -XX:MaxPermSize=512m"
 export JAVA_OPTS="-Xmx2024m -Xms1024m -XX:MaxPermSize=512m"
 export HOSTNAME=$(hostname)
@@ -22,6 +24,7 @@ export HOMEBREW_GITHUB_API_TOKEN="9a68042998770190facf2aedeab4a1794ac9a36f"
 if [[ -f /Users/vcutten/Library/Python/2.7/lib/python/site-packages/powerline/bindings/bash/powerline.sh ]]; then
 	source '/Users/vcutten/Library/Python/2.7/lib/python/site-packages/powerline/bindings/bash/powerline.sh'
 fi
+# regen ssh pub key openssh -y -f id_rsa > id_rsa.pub
 
 #bind '\C-Space':complete
 #bind '\C-i':menu-complete
@@ -211,7 +214,7 @@ fi
 
 export FCSH=$FLEX_HOME/bin/fcsh
 export PLAN9=/usr/local/plan9
-PATH="/usr/local/bin:$PATH:/Users/vcutten/Library/Python/2.7/bin"
+PATH="/usr/local/bin:$PATH:/Users/vcutten/Library/Python/2.7/bin:~/.pirate-setup/bin"
 
 #export PS1="\[\e[36;1m\][\A] \[\e[0;35m\]$HOSTSTUB \[\e[31;1m\]\w> \[\e[0m\]"                                     
 #export PS2="\[\e[31;1m\]> \[\e[0m\]"                                                                              
@@ -434,7 +437,7 @@ trcomni()
 {
 	tail -f "$@" "/Users/$USER/.pirate-setup/pirate-vim/bundle/Omnisharp/server/Omnisharp/bin/Debug/server.log"
 }
-
+export UNITY_LOG="/Users/$USER/Library/Logs/Unity/Editor.log"
 trcunity()
 {
 	tail -f "$@" "/Users/$USER/Library/Logs/Unity/Editor.log"
@@ -1067,3 +1070,13 @@ unzip_stream()
 {
 	python -c "import zipfile,sys,StringIO;zipfile.ZipFile(StringIO.StringIO(sys.stdin.read())).extractall(sys.argv[1] if len(sys.argv) == 2 else '.')";
 }
+
+diff-temp()
+{
+	file=$1;
+	name=$(basename $1);
+	tfile=$(find ~/workrepos/farm3/development/src/Farm3/Temp -name ${name} );
+	vimdiff $tfile $file
+}
+#editing lots of json files (adding a an array)
+#for file in $(find . -name \*.json -exec grep -l PartsRequired {} + | grep -v 'jsonMapping' | grep -v 'plot' ); do echo $file; cat $file | jq -S '.components.UpgradeComponent.Requirement.PartsRequired[] += {"$type": "UpgradePartData, Assembly-CSharp"}' > ; done
