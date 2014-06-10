@@ -1062,3 +1062,8 @@ count_filetypes()
 }
 
 #p4 opened -sc default | grep add | awk '{ print $1 }' | sed 's|//farm3/branches/dev/src/|./|g'
+
+unzip_stream()
+{
+	python -c "import zipfile,sys,StringIO;zipfile.ZipFile(StringIO.StringIO(sys.stdin.read())).extractall(sys.argv[1] if len(sys.argv) == 2 else '.')";
+}

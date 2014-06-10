@@ -7,7 +7,7 @@
 	editor = /usr/local/bin/vim
 [alias]
 	mc = !git status -s | grep '^UU' | awk '{print $2}'
-	st = status -sb
+	st = !git status -sb 
 	sup = submodule update
 	ci = commit -a
 	ur = !git status -s | grep '^UU' | awk '{print $2}'
@@ -51,3 +51,7 @@
 	host = github-ca.corp.zynga.com
 [github]
 	user = vito-c
+[branch]
+	autosetuprebase = always
+[pull]
+	rebase = true
