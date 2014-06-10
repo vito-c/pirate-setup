@@ -6,12 +6,18 @@
 	ignorecase = true
 	editor = /usr/local/bin/vim
 [alias]
+	##################################### Rebase Commands #####################################
+	rc = rebase --continue
+	rs = rebase --skip
+	ra = rebase --abort
+	##################################### Status Commands #####################################
 	mc = !git status -s | grep '^UU' | awk '{print $2}'
 	st = !git status -sb 
-	sup = submodule update
-	ci = commit -a
 	ur = !git status -s | grep '^UU' | awk '{print $2}'
 	mod = !git status -s | grep '^ M' | awk '{print $2}'
+	######################################## Shortcuts ########################################
+	sup = submodule update
+	ci = commit -a
 	cp = cherry-pick
 	co = checkout
 	todo = grep --heading --break --ignore-case -e ' FIX: *' -e ' TODO: *'
