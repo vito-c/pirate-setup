@@ -137,7 +137,8 @@ if [[ $(uname) =~ Darwin || $(uname) =~ FeeBSD ]]; then
 	ls() { command ls -G "$@"; }
 	fn() { command find . -iname "$@"; }
 	ehco() { command echo "$@"; }
-	chmod() { command chmod "$@"; }
+	gti() { command git "$@"; }
+	cmhod() { command chmod "$@"; }
 	fw() {
 		file='*'"$1"'*'
 		ff $file $2 $3
@@ -1080,3 +1081,8 @@ diff-temp()
 }
 #editing lots of json files (adding a an array)
 #for file in $(find . -name \*.json -exec grep -l PartsRequired {} + | grep -v 'jsonMapping' | grep -v 'plot' ); do echo $file; cat $file | jq -S '.components.UpgradeComponent.Requirement.PartsRequired[] += {"$type": "UpgradePartData, Assembly-CSharp"}' > ; done
+
+clean-mxmlc() 
+{
+	gawk '/\/Users/ {count++; prev=0; } { if(prev != count){ printf("%d: %s\n", count, $0); } else { print; }  prev=count; }' | gsed 's|/Users/.*/StagingArea/||g' | gsed 's|: col:|:\n\tcol:|g'
+}
