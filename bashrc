@@ -1081,10 +1081,21 @@ diff-temp()
 }
 #editing lots of json files (adding a an array)
 #for file in $(find . -name \*.json -exec grep -l PartsRequired {} + | grep -v 'jsonMapping' | grep -v 'plot' ); do echo $file; cat $file | jq -S '.components.UpgradeComponent.Requirement.PartsRequired[] += {"$type": "UpgradePartData, Assembly-CSharp"}' > ; done
-
-clean-mxmlc() 
+clean-mxmlc()
 {
-	gawk '/\/Users/ {count++; prev=0; } { if(prev != count){ printf("%d: %s\n", count, $0); } else { print; }  prev=count; }' | gsed 's|/Users/.*/StagingArea/||g' | gsed 's|: col:|:\n\tcol:|g'
+	awk '/\/Users/,/ *\^/ {printf "%s\0",$0} / *\^/ {print ""} END {print ""}' |
+		sort -t'\0' -k3,3 |
+		tr '\0' '\n' |
+		gsed '/^$/d' 
+		# | filter needs to be added here
+		# | number-mxmlc
+}
+
+number-mxmlc() 
+{
+	gawk '/\/Users/ {count++; prev=0; } { if(prev != count){ printf("%d: %s\n", count, $0); } else { print; }  prev=count; }' 
+	| gsed 's|/Users/.*/StagingArea/||g' 
+	| gsed 's|: col:|:\n\tcol:|g'
 }
 
 disk-speed()
@@ -1097,3 +1108,4 @@ disk-speed()
 	rm tstfile
 }
  
+#curl -s http://vcutten:670dd1b59e4ca0521d57d06a06350d88@ci.farm3.zynga.com/job/U02_UTW/build
