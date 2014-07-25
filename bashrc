@@ -1093,9 +1093,9 @@ clean-mxmlc()
 
 number-mxmlc() 
 {
-	gawk '/\/Users/ {count++; prev=0; } { if(prev != count){ printf("%d: %s\n", count, $0); } else { print; }  prev=count; }' 
-	| gsed 's|/Users/.*/StagingArea/||g' 
-	| gsed 's|: col:|:\n\tcol:|g'
+	gawk '/\/Users/ {count++; prev=0; } { if(prev != count){ printf("%d: %s\n", count, $0); } else { print; }  prev=count; }' | 
+		gsed 's|/Users/.*/StagingArea/||g' |
+		gsed 's|: col:|:\n\tcol:|g'
 }
 
 disk-speed()
@@ -1108,4 +1108,4 @@ disk-speed()
 	rm tstfile
 }
  
-#curl -s http://vcutten:670dd1b59e4ca0521d57d06a06350d88@ci.farm3.zynga.com/job/U02_UTW/build
+#curl -s http://vcutten:@ci.farm3.zynga.com/job/U02_UTW/build
