@@ -1086,3 +1086,14 @@ clean-mxmlc()
 {
 	gawk '/\/Users/ {count++; prev=0; } { if(prev != count){ printf("%d: %s\n", count, $0); } else { print; }  prev=count; }' | gsed 's|/Users/.*/StagingArea/||g' | gsed 's|: col:|:\n\tcol:|g'
 }
+
+disk-speed()
+{
+	output=$(dd if=/dev/zero bs=2048k of=tstfile count=1024 2>&1 | grep sec | awk '{print $1 / 1024 / 1024 / $5, "MB/sec" }')
+	echo write $output
+	sudo purge
+	output=$(dd if=tstfile bs=2048k of=/dev/null count=1024 2>&1 | grep sec | awk '{print $1 / 1024 / 1024 / $5, "MB/sec" }')
+	echo read $output
+	rm tstfile
+}
+ 
