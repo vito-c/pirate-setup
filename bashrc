@@ -24,6 +24,7 @@ export HOMEBREW_GITHUB_API_TOKEN="9a68042998770190facf2aedeab4a1794ac9a36f"
 if [[ -f /Users/vcutten/Library/Python/2.7/lib/python/site-packages/powerline/bindings/bash/powerline.sh ]]; then
 	source '/Users/vcutten/Library/Python/2.7/lib/python/site-packages/powerline/bindings/bash/powerline.sh'
 fi
+
 # regen ssh pub key openssh -y -f id_rsa > id_rsa.pub
 
 #bind '\C-Space':complete
@@ -49,7 +50,6 @@ shopt -s nocaseglob
 shopt -u expand_aliases
 shopt -s globstar
 
-
 #export SCALA_HOME=/Users/vcutten/workrepos/apparat/scala-2.8.2.final
 
 #Enable Colors
@@ -63,6 +63,7 @@ shopt -s globstar
 #export LESS_TERMCAP_ue=$'\E[0m'           # end underline
 #export LESS_TERMCAP_us=$'\E[04;38;5;146m' # begin underline
 export HOMEBREW_EDITOR=vim
+export EDITOR=vim
 
 #############################################################################################################################
 #                                                                                                                           #
@@ -80,7 +81,6 @@ if [[ $(uname) =~ Darwin || $(uname) =~ FeeBSD ]]; then
 	fi
 	export FLEX_HOME=/Users/vcutten/local/flash/flex/sdk
 	export vimdir=$HOME/.vim
-	export EDITOR=vim
 	if [[ $HOSTNAME =~ "vito-mbp" ]]; then                                                                           
 		export HOSTSTUB="vito-mbp";
 	elif [[ $HOSTNAME =~ "vito-tower" ]]; then
@@ -159,7 +159,7 @@ if [[ $(uname) =~ Darwin || $(uname) =~ FeeBSD ]]; then
 			find "$3" \( -name .\*~ -o -name \*.meta -prune -o -name \*.prefab -prune \) -o -iname "$1""$type" -print; 
 		fi
 	}
-	fc() { 
+	fcs() { 
 		if [[ "$2" == "" ]]; then 
 			type='*.cs';
 		else
