@@ -1145,5 +1145,19 @@ disk-speed()
 	echo read $output
 	rm tstfile
 }
+
+fbid-zid()
+{
+	curl -s \
+	  -X 'POST' \
+	  'https://api.zynga.com/zids/map' \
+	  -H 'Content-Type: application/json' \
+	  -d '{
+		"fromNetwork": 1,
+		"uids": [
+		  "'$@'"
+		]
+	  }' | jq '.["'$@'"]["18"]'
+}
  
 #curl -s http://vcutten:@ci.farm3.zynga.com/job/U02_UTW/build
