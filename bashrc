@@ -664,18 +664,16 @@ updateStageUser()
 {
 	name=$1 password=$2 fbid=$3
 
-	graph=https://graph.facebook.com;
 	app_fid="XX"
 	app_sec="YY"
-	acc_tkn=$(curl -F type=client_cred -F client_id=$app_fid -F client_secret=$app_sec -F grant_type=client_credentials $graph/oauth/access_token | sed -nE 's|access_token=(.*)$|\1|p');
-	echo "curl -F "password=$password" -F "name=$name" $graph/$fbid?access_token=$acc_tkn";
-	curl -F "name=$name" -F "password=$password" $graph/$fbid?access_token=$acc_tkn;
+	acc_tkn=$(curl -F type=client_cred -F client_id=$app_fid -F client_secret=$app_sec -F grant_type=client_credentials $GRAPH/oauth/access_token | sed -nE 's|access_token=(.*)$|\1|p');
+	echo "curl -F "password=$password" -F "name=$name" $GRAPH/$fbid?access_token=$acc_tkn";
+	curl -F "name=$name" -F "password=$password" $GRAPH/$fbid?access_token=$acc_tkn;
 }
 
 # Get test user login
 getRoboDomo()
 {
-	GRAPH=https://graph.facebook.com;
 	APP_FID="$1"
 	APP_SEC="$2"
 	FB_ID="100003999105669"
@@ -687,7 +685,50 @@ getRoboDomo()
 		-F "locale=en_US" \
 		-F "permissions=read_stream" \
 		-F "method=post" \
-		$graph/$app_fid/accounts/test-users?access_token=$acc_tkn | sed -nE 's|.*"login_url":"([^"]*)".*|\1|p'
+		$GRAPH/$app_fid/accounts/test-users?access_token=$acc_tkn | sed -nE 's|.*"login_url":"([^"]*)".*|\1|p'
+}
+
+cvl_test()
+{
+	name=$1 password=$2 fbid=$3
+
+	app_fid="$1"
+	app_sec="$2"
+	echo "curl -F "password=$password" -F "name=$name" $GRAPH/$fbid?access_token=$acc_tkn";
+	curl -F "name=$name" -F "password=$password" $GRAPH/$fbid?access_token=$acc_tkn;
+}
+
+access_token()
+{
+	if [[ -z $1 ]]; then
+		APP_ID=$DEFAULT_APP_ID;
+	#user passed in a app name you should be able to set the values
+	#ie access_token cvl-dev ...easiest way to do this is to change config to json values
+	fi
+	if [[ -z $2 ]]; then
+		APP_SEC=$DEFAULT_APP_SEC;
+	fi
+
+	curl -s -F client_id=$APP_ID \
+	     -F client_secret=$APP_SEC \
+		 -F grant_type=client_credentials $GRAPH/oauth/access_token |
+	sed -nE 's|access_token=(.*)$|\1|p';
+}
+
+get_friends()
+{
+	if [[ -z $1 ]]; then
+		ACC_TKN=$(access_token);
+	else
+		ACC_TKN=$1;
+	fi
+	if [[ -z $2 ]]; then
+		fbid=$FB_ID;
+	else
+		fbid=$2;
+	fi
+
+	curl -s $GRAPH/$FB_ID/friends?access_token=$ACC_TKN | jq '.'
 }
 
 # Manage my ap
@@ -695,32 +736,29 @@ updateDevUser()
 {
 	name=$1 password=$2 fbid=$3
 
-	graph=https://graph.facebook.com;
 	app_fid="$1"
 	app_sec="$2"
-	acc_tkn=$(curl -F type=client_cred -F client_id=$app_fid -F client_secret=$app_sec -F grant_type=client_credentials $graph/oauth/access_token | sed -nE 's|access_token=(.*)$|\1|p');
-	echo "curl -F "password=$password" -F "name=$name" $graph/$fbid?access_token=$acc_tkn";
-	curl -F "name=$name" -F "password=$password" $graph/$fbid?access_token=$acc_tkn;
+	acc_tkn=$(curl -F type=client_cred -F client_id=$app_fid -F client_secret=$app_sec -F grant_type=client_credentials $GRAPH/oauth/access_token | sed -nE 's|access_token=(.*)$|\1|p');
+	echo "curl -F "password=$password" -F "name=$name" $GRAPH/$fbid?access_token=$acc_tkn";
+	curl -F "name=$name" -F "password=$password" $GRAPH/$fbid?access_token=$acc_tkn;
 }
 
 # Script needs to be run from repo root directory. 
 manage_allApps()
 {
-	GRAPH=https://graph.facebook.com;
 	apps=(art blue feature{10..20} feature0{1..9} green rainbow red tractor trunk silver);
 	for APP in "${apps[@]}"; do
 		app_fid=$(sed -En "s|.*'FB_APP_ID', ?'([^']*)'.*|\1|p" ~/workrepos/${AWESOMEVILLE}-main/Server/game/config/$app/local.inc.php);
 		app_sec=$(sed -En "s|.*'FB_API_SECRET', ?'([^']*)'.*|\1|p" ~/workrepos/${AWESOMEVILLE}-main/Server/game/config/$app/local.inc.php);
-		acc_tkn=$(curl -F type=client_cred -F client_id=$app_fid -F client_secret=$app_sec -F grant_type=client_credentials $graph/oauth/access_token | sed -nE 's|access_token=(.*)$|\1|p');
+		acc_tkn=$(curl -F type=client_cred -F client_id=$app_fid -F client_secret=$app_sec -F grant_type=client_credentials $GRAPH/oauth/access_token | sed -nE 's|access_token=(.*)$|\1|p');
 		echo -e Exucing on app: $app\n;
-		echo -e curl $1 $graph/$app_fid?access_token=$acc_tkn\n;
-		curl $1 $graph/$app_fid?access_token=$acc_tkn;
+		echo -e curl $1 $GRAPH/$app_fid?access_token=$acc_tkn\n;
+		curl $1 $GRAPH/$app_fid?access_token=$acc_tkn;
 	done;
 }
 
 test_v2d2()
 {
-	GRAPH=https://graph.facebook.com;
 	TOKEN=$(curl -F type=client_cred -F client_id=$FB_APP_V2D2 -F client_secret=$FB_SEC_V2D2 -F grant_type=client_credentials $GRAPH/oauth/access_token | sed -nE 's|access_token=(.*)$|\1|p');
 	echo curl -F 'name=test' -F 'description=test group fun' -F 'privacy=secret' -F 'admin=true' $GRAPH/$FB_APP_V2D2/groups?access_token=$TOKEN;
 }
