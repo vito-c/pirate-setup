@@ -1,4 +1,5 @@
 #!/usr/local/bin/bash
+
 #############################################################################################################################
 #                                                                                                                           #
 #                                          Core CPU Values (Environment Variables                                           #
@@ -49,6 +50,8 @@ shopt -s cdspell
 shopt -s nocaseglob
 shopt -u expand_aliases
 shopt -s globstar
+shopt -s lithist cmdhist
+
 
 #export SCALA_HOME=/Users/vcutten/workrepos/apparat/scala-2.8.2.final
 
@@ -92,8 +95,10 @@ if [[ $(uname) =~ Darwin || $(uname) =~ FeeBSD ]]; then
 	fi
 	export JAVA_HOME=$(/usr/libexec/java_home)
 
-	if [[ -f `brew --prefix`/share/bash-completion/bash_completion ]]; then
-		source `brew --prefix`/share/bash-completion/bash_completion;
+	if hash brew 2>/dev/null; then
+		if [[ -f `brew --prefix`/share/bash-completion/bash_completion ]]; then
+			source `brew --prefix`/share/bash-completion/bash_completion;
+		fi
 	fi
 
 	disable-spotlight(){
@@ -1146,18 +1151,9 @@ disk-speed()
 	rm tstfile
 }
 
-fbid-zid()
-{
-	curl -s \
-	  -X 'POST' \
-	  'https://api.zynga.com/zids/map' \
-	  -H 'Content-Type: application/json' \
-	  -d '{
-		"fromNetwork": 1,
-		"uids": [
-		  "'$@'"
-		]
-	  }' | jq '.["'$@'"]["18"]'
-}
+source ~/.pirate-setup/bash/facebook
+
+#cat app.json | jq -r '.[] | select( .name == "''" ) | .facebook.id '
+#mdfind -onlyin ~/workrepos -name app.json
  
 #curl -s http://vcutten:@ci.farm3.zynga.com/job/U02_UTW/build
