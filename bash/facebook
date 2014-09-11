@@ -1,0 +1,91 @@
+#!/usr/local/bin/bash
+export WORKREPOS=$HOME/workrepos
+export FB_ID="3326448";
+export GRAPH=https://graph.facebook.com/v1.0;
+
+fb_configs()
+{
+	mdfind -onlyin $WORKREPOS -name app.json
+}
+
+fb_apps()
+{
+	for file in $(mdfind -onlyin $WORKREPOS -name app.json); do cat $file | jq -r '.[].name'; done
+}
+
+fb_appsloc_json()
+{
+	for file in $(mdfind -onlyin $WORKREPOS -name app.json); do cat $file | jq '{name:.[].name, file:"'$file'"}'; done
+}
+
+fb_appjson()
+{
+	if [[ -z $3 ]]; then
+		data=$(for file in $(mdfind -onlyin $WORKREPOS -name app.json); do cat $file; done);
+	else
+		data=$(cat $3);
+	fi
+
+	name=$1;
+	filter=$2;
+
+	echo $data | jq -r '.[] | select( .name == "'$name'" ) | '$filter' '
+}
+
+fb_fbappid()
+{
+	name=$1;
+	fb_appjson $name ".facebook.id";
+}
+
+fb_fbsecret()
+{
+	name=$1;
+	fb_appjson $name ".facebook.secret";
+}
+
+fb_zappid()
+{
+	name=$1;
+	fb_appjson $name ".secret";
+}
+
+fb_zsecret()
+{
+	name=$1;
+	fb_appjson $name ".secret";
+}
+
+fb_access_token()
+{
+	if [[ -z $1 ]]; then
+		APP_ID=$DEFAULT_APP_ID;
+	else 
+		APP_ID=$1;
+	fi
+	if [[ -z $2 ]]; then
+		APP_SEC=$DEFAULT_APP_SEC;
+	else 
+		APP_SEC=$2;
+	fi
+
+	curl -s -F client_id=$APP_ID \
+	     -F client_secret=$APP_SEC \
+		 -F grant_type=client_credentials $GRAPH/oauth/access_token |
+	sed -nE 's|access_token=(.*)$|\1|p';
+}
+
+fb_token()
+{
+	name=$1
+	fb_access_token $(fb_fbappid $name) $(fb_fbsecret $name)
+}
+
+fb_friends()
+{
+	name=$1;
+	ACC_TKN=$(fb_token $name);
+
+	curl -s $GRAPH/$FB_ID/friends?access_token=$ACC_TKN | jq '.'
+}
+

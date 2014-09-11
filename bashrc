@@ -23,13 +23,24 @@ export ANDROID_HOME=/usr/local/opt/android-sdk
 export ANDROID_NDK=/usr/local/opt/android-ndk
 export HOMEBREW_GITHUB_API_TOKEN="9a68042998770190facf2aedeab4a1794ac9a36f"
 if [[ -f /Users/vcutten/Library/Python/2.7/lib/python/site-packages/powerline/bindings/bash/powerline.sh ]]; then
+	/Users/vcutten/Library/Python/2.7/bin/powerline-daemon -q
+	export POWERLINE_COMMAND=/Users/vcutten/Library/Python/2.7/bin/powerline
+	export POWERLINE_CONFIG=/Users/vcutten/Library/Python/2.7/bin/powerline-config
 	source '/Users/vcutten/Library/Python/2.7/lib/python/site-packages/powerline/bindings/bash/powerline.sh'
 fi
 
 # regen ssh pub key openssh -y -f id_rsa > id_rsa.pub
 
-#bind '\C-Space':complete
-#bind '\C-i':menu-complete
+#stty werase undef
+bind 'set bind-tty-special-chars off'
+bind '\C-Space':complete
+bind '\C-i':menu-complete
+bind '"\C-f": forward-word'
+bind '"\C-b": backward-word'
+bind '"\u26F5": unix-word-rubout'
+bind '"\C-w": backward-kill-word'
+bind '"\e[B": history-search-forward'
+bind '"\e[A": history-search-backward'
 #bind '"\ew": backward-kill-word'
 
 # Override defaults
@@ -41,8 +52,7 @@ HISTFILESIZE=400000000
 #HISTCONTROL=ignoredups:erasedups:ignoreboth
 HISTCONTROL=ignoredups:erasedups
 HISTSIZE=10000
-PROMPT_COMMAND="history -n; history -w; history -c; history -r; $PROMPT_COMMAND"
-PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
+PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
 export HISTSIZE PROMPT_COMMAND HISTCONTROL
 shopt -s histappend
 shopt -s extglob
@@ -220,7 +230,7 @@ fi
 
 export FCSH=$FLEX_HOME/bin/fcsh
 export PLAN9=/usr/local/plan9
-PATH="/usr/local/bin:$PATH:/Users/vcutten/Library/Python/2.7/bin:~/.pirate-setup/bin"
+PATH="/usr/local/bin:$PATH:/Users/vcutten/Library/Python/2.7/bin:~/.pirate-setup/bin:/usr/texbin"
 
 #export PS1="\[\e[36;1m\][\A] \[\e[0;35m\]$HOSTSTUB \[\e[31;1m\]\w> \[\e[0m\]"                                     
 #export PS2="\[\e[31;1m\]> \[\e[0m\]"                                                                              
@@ -1056,7 +1066,7 @@ if [[ -f ~/workrepos/mobile/admin/farm2mobile/config.php ]]; then
 	FVN_ZLIVE_SEC=$(pattern="'ZLIVE_APP_SECRET' *, *'([a-z0-9]*)'"; grep -oE "$pattern" ~/workrepos/mobile/admin/farm2mobile/config.php | sed -E "s|$pattern|\1|g")
 	FVN_ZLIVE_APP=5000880;
 	ZAPI="https://api.zynga.com"
-	LZID=$(strings ~/Library/Preferences/unity.Zynga\ Inc..FarmVille\ 3.plist | perl -ne '/"zid":([^,]*),/xg && print "$1\n"' | uniq)
+	#LZID=$(strings ~/Library/Preferences/unity.Zynga\ Inc..FarmVille\ 3.plist | perl -ne '/"zid":([^,]*),/xg && print "$1\n"' | uniq)
 fi
 
 zlive_identities()
