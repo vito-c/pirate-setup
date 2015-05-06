@@ -1,0 +1,17 @@
+# Parallel Arrays to Objects
+# input: echo '{"vals":["20","10"],"names":["thing","zip"]}' 
+# desired output: [ {"val":20,"name":"thing"},{"val":10,"name":"zip"} ]
+# jq -n '{"number": ["20", "10", "30"], "stuff": ["thing", "zip", "bacon"], "foo": ["bar", "baz", "quux"]} | zip_object'
+def zip_object:
+    to_entries | sort_by(.key) |
+    map(.key) as $keys |
+    map(.value) | transpose |
+    map(
+        [$keys, .] | transpose |
+        map({key: .[0], value: .[1]}) | from_entries
+    )
+;
+
+#def supaselect(skey;svalue):
+	#.. | select(has(skey))? | select(.skey == svalue)
+#;
