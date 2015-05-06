@@ -6,12 +6,26 @@ export GRAPH=https://graph.facebook.com/v1.0;
 fb_configs()
 {
 	mdfind -onlyin $WORKREPOS -name app.json
+	mdfind -onlyin $WORKREPOS -name app-missing.json
+}
+
+fb_app_ids()
+{
+	for file in $(fb_configs); do cat $file | jq -r '.[].facebook.id'; done
+}
+
+fb_app_infos()
+{
+	for file in $(fb_configs); do cat $file | jq -r '.[] | {id: .facebook.id, sec: .facebook.secret}'; done
 }
 
 fb_apps()
 {
-	for file in $(mdfind -onlyin $WORKREPOS -name app.json); do cat $file | jq -r '.[].name'; done
+	APP_IDS=$(fb_app_infos | )
+#	for id in $APP_IDS; do 
+#		echo 
 }
+
 
 fb_appsloc_json()
 {

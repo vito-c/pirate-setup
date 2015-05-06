@@ -15,6 +15,7 @@ export LC_ALL=en_US.UTF-8
 export ANT_OPTS="-Xmx1024m -Xms512m -XX:MaxPermSize=512m"
 export JAVA_OPTS="-Xmx2024m -Xms1024m -XX:MaxPermSize=512m"
 export HOSTNAME=$(hostname)
+export P4CONFIG=/Users/vcutten/.p4env
 
 ##
 ## Android SDK
@@ -47,13 +48,13 @@ bind '"\e[A": history-search-backward'
 #export HISTSIZE=3600
 #export PROMPT_COMMAND='history -a; history -r'
 #PROMPT_COMMAND="history -a"
-#shopt -s histappend
-HISTFILESIZE=400000000
+export HISTFILESIZE=400000000
 #HISTCONTROL=ignoredups:erasedups:ignoreboth
-HISTCONTROL=ignoredups:erasedups
-HISTSIZE=10000
-PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
-export HISTSIZE PROMPT_COMMAND HISTCONTROL
+export HISTCONTROL=ignoreboth:erasedups
+export HISTSIZE=100000
+#PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
+export HISTIGNORE="ls:ll:fg:eb:ev:fc:pwd:exit:history:cb"
+#export HISTSIZE PROMPT_COMMAND HISTCONTROL
 shopt -s histappend
 shopt -s extglob
 shopt -s cdspell
@@ -61,7 +62,6 @@ shopt -s nocaseglob
 shopt -u expand_aliases
 shopt -s globstar
 shopt -s lithist cmdhist
-
 
 #export SCALA_HOME=/Users/vcutten/workrepos/apparat/scala-2.8.2.final
 
@@ -111,6 +111,11 @@ if [[ $(uname) =~ Darwin || $(uname) =~ FeeBSD ]]; then
 		fi
 	fi
 
+	search-history(){
+		history | grep -v history | gawk '{ $1=""; print $0 }' | sort | uniq | grep $1
+
+	}
+
 	disable-spotlight(){
 		sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.metadata.mds.plist
 	}
@@ -158,8 +163,11 @@ if [[ $(uname) =~ Darwin || $(uname) =~ FeeBSD ]]; then
 		file='*'"$1"'*'
 		ff $file $2 $3
 	}
-	gf() {
-		find . -name \*.cs -exec grep -in $@ {} +
+	gfj() {
+		find ./Farm3/Data/Json -name \*.json -exec grep -in "$@" {} +
+	}
+	gfc() {
+		find . -name \*.cs -exec grep -in "$@" {} +
 	}
 	ff() { 
 		if [[ "$2" == "" ]]; then 
@@ -187,7 +195,8 @@ if [[ $(uname) =~ Darwin || $(uname) =~ FeeBSD ]]; then
 			find "$3" \( -name .\*~ -o -name \*.meta -prune \) -o -iname "$1""$type" -print; 
 		fi
 	}
-	grep() { command grep --color='auto' "$@"; }
+export GREP_OPTIONS='--color=auto -i'
+	#grep() { command grep --color='auto' "$@"; }
 	ll() { command ls -lGh "$@"; }
 	la() { command ls -lGha "$@"; }
 	# might be causing vim diff issues
@@ -230,7 +239,7 @@ fi
 
 export FCSH=$FLEX_HOME/bin/fcsh
 export PLAN9=/usr/local/plan9
-PATH="/usr/local/bin:$PATH:/Users/vcutten/Library/Python/2.7/bin:~/.pirate-setup/bin:/usr/texbin"
+PATH="/usr/local/bin:/System/Library/Frameworks/Python.framework/Versions/2.7/bin/:$PATH:/Users/vcutten/Library/Python/2.7/bin:~/.pirate-setup/bin:/usr/texbin"
 
 #export PS1="\[\e[36;1m\][\A] \[\e[0;35m\]$HOSTSTUB \[\e[31;1m\]\w> \[\e[0m\]"                                     
 #export PS2="\[\e[31;1m\]> \[\e[0m\]"                                                                              
@@ -446,29 +455,30 @@ openFlex()
 
 trcflash()
 {
-	tail -f "/Users/vcutten/Library/Preferences/Macromedia/Flash Player/Logs/flashlog.txt"
+	tail -F "/Users/vcutten/Library/Preferences/Macromedia/Flash Player/Logs/flashlog.txt"
 }
 
 trcomni()
 {
-	tail -f "$@" "/Users/$USER/.pirate-setup/pirate-vim/bundle/Omnisharp/server/Omnisharp/bin/Debug/server.log"
+	tail -F "$@" "/Users/$USER/.pirate-setup/pirate-vim/bundle/Omnisharp/server/Omnisharp/bin/Debug/server.log"
 }
 export UNITY_LOG="/Users/$USER/Library/Logs/Unity/Editor.log"
 trcunity()
 {
-	tail -f "$@" "/Users/$USER/Library/Logs/Unity/Editor.log"
+	tail -F "$@" "/Users/$USER/Library/Logs/Unity/Editor.log"
+	#less +F "$@" "/Users/$USER/Library/Logs/Unity/Editor.log"
 }
 
 trcphp()
 {
 	#TODO: add -a -e (default is -e) for access log
 	if [[ $(uname) =~ Darwin ]]; then
-		tail -f $1 | sed $'s/\\\\n/\\\n/g'
+		tail -F $1 | sed $'s/\\\\n/\\\n/g'
 	fi
 	if [[ $(uname) =~ Linux ]]; then
-		tail -f /mnt/farm2dev/apps/$1/logs/error.log | sed $'s/\\\\n/\\\n/g'
+		tail -F /mnt/farm2dev/apps/$1/logs/error.log | sed $'s/\\\\n/\\\n/g'
 	fi
-	#tail -f /private/var/log/apache2/$1-error_log | sed $'s/\\\\n/\\\n/g'
+	#tail -F /private/var/log/apache2/$1-error_log | sed $'s/\\\\n/\\\n/g'
 	# sed -e 's/\\n/\n/g'; -cent os
 	# also works 's/\\n/\'$'\n'/g - it's essentially inserting a literal carriage return
 
@@ -1161,9 +1171,190 @@ disk-speed()
 	rm tstfile
 }
 
+vimc()
+{
+	UNITY_RUNNING=$( command /usr/local/bin/vim --servername UNITY --remote-send "" && echo $? );
+	osascript ~/.pirate-setup/pirate-wench/unity-cli.scpt "$@"
+	if [[ $UNITY_RUNNING ]]; then 
+		command /usr/local/bin/vim --servername UNITY --remote-silent "$@";
+	fi
+}
+
 source ~/.pirate-setup/bash/facebook
+source ~/.pirate-setup/bash/zynga
 
 #cat app.json | jq -r '.[] | select( .name == "''" ) | .facebook.id '
+# md finder
 #mdfind -onlyin ~/workrepos -name app.json
- 
+# jenkins build
 #curl -s http://vcutten:@ci.farm3.zynga.com/job/U02_UTW/build
+# history cleaner
+#cat ~/.bash_history | nl | sort -k 2 | uniq -f 1 | sort -n | cut -f2 > ~/.bash_history.clean
+shelve()
+{
+
+	branch=$(git branch | grep '*' | sed 's/\* //g')
+	git diff p4/master > ${branch}.patch
+	mv ${branch}.patch /Users/vcutten/workrepos/farm3-p4/development/
+	cd /Users/vcutten/workrepos/farm3-p4/development
+	p4 sync /Users/vcutten/workrepos/farm3-p4/development/...#head
+	patch -p1 < ${branch}.patch
+	mkdir -p /Users/vcutten/workrepos/.patches
+	mv ${branch}.patch /Users/vcutten/workrepos/.patches/${branch}.$(date "+%s").patch
+	p4 change
+	cd /Users/vcutten/workrepos/farm3-git-all
+	#todo shelve files added to change lsit
+}
+
+gcp4()
+{
+	output=`lget_gp4_diffs ${@}`
+	if [ $# -eq 0 ]; then
+		echo git co p4/master
+	elif [[ ${#output[@]} == 0 || ${output[0]} == "" ]]; then
+		echo no matches
+	else
+		git co p4/master -- ${output[@]}
+	fi
+}
+
+gdp4()
+{
+	if [ $# -eq 0 ]; then
+		git diff p4/master
+	elif [[ $1 == "l" || $1 == "name" ]]; then
+		git diff --name-only p4/master 
+	elif [[ $1 == "n" ]]; then
+		git diff --name-only p4/master | nl -v0
+	else
+		output=`lget_gp4_diffs ${@}`
+		git diff p4/master -- ${output[@]}
+	fi
+}
+
+gdp4_completer()
+{
+
+	#list=(`git diff --name-only p4/master | xargs basename `)
+	local list=();
+	local branch;
+
+	while read -r branch; do list+=("${branch##*/}"); done < <(git diff --name-only p4/master)
+	for word in "${list[@]}"; do 
+		[[ $word = "${COMP_WORDS[COMP_CWORD]}"* ]] && COMPREPLY+=("$word"); 
+	done
+
+	#for (( i=0; i < ${#list[@]}; i++ )); do
+		#COMPREPLY+=(${list[$i]})
+	#done
+}
+
+complete -F gdp4_completer gdp4
+complete -F gdp4_completer gcp4
+
+lget_gp4_diffs()
+{
+	list=(`git diff --name-only p4/master`)
+	declare -A mymap
+	output=()
+	for var in "${list[@]}"
+	do
+		bn=$(basename $var)
+		mymap[$var]=$var;
+		mymap[$bn]=$var;
+	done
+
+	for var in "$@"
+	do
+		if [[ $var =~ ^[0-9]+$  ]]; then #single numero
+			if [[ ${list[$var]} != "" ]]; then
+				output+=(${list[$var]})
+			fi
+		elif [[ $var =~ ^.*?\..*$ ]]; then #wild card
+			for item in ${list[@]}; do
+				if [[ $item == $var ]]; then
+					output+=($item)
+				fi
+			done
+		elif [[ $var =~ ^[0-9]+\.\.[0-9]+$ ]]; then #range
+			start=${var%..*};
+			end=${var#*..};
+			for (( i=${start}; i <= ${end}; i++ )); do
+				output+=(${list[$i]})
+			done
+		elif [[ ${mymap[$var]} != ""  ]]; then
+			mat=${mymap[$var]}
+			echo $mat
+			output+=($mat)
+		else
+			echo no match $var
+		fi
+	done
+
+	if [[ ${#output[@]} != 0 ]]; then
+		printf "%s\n" "${output[@]}"
+	else
+		return
+	fi
+}
+
+gdfn()
+{
+	git diff --name-only 
+}
+
+gdf()
+{
+	git diff
+}
+
+p4shelved()
+{
+	p4 changes -s shelved -u vcutten
+}
+
+AWK_COLORS='-v "red=$(tput setaf 1)" -v "reset=$(tput sgr0)" -v "green=$(tput setaf 2)" -v "yellow=$(tput setaf 3)" -v "cyan=$(tput setaf 6)"'
+ios-log-startup()
+{
+	logname=ios-$(date "+%Y-%m-%d-%H:%M:%S")
+	tail -F /Users/vcutten/workrepos/lldb.log |
+	tee -a /Users/vcutten/workrepos/ios-log/${logname}.log | 
+	awk '/VC:/{ match( $0, /[^"]*"?(VC:[^"]*)(".*)?/, arr ); print arr[1]; fflush();}' |
+	/Users/vcutten/workrepos/awkbackup/log-parse.awk | 
+	tee -a /Users/vcutten/workrepos/ios-log/${logname}-vc.log | 
+	/Users/vcutten/workrepos/awkbackup/log-color.awk -v "red=$(tput setaf 1)" -v "reset=$(tput sgr0)" -v "green=$(tput setaf 2)" -v "yellow=$(tput setaf 3)" -v "cyan=$(tput setaf 6)"
+}
+
+editor-log-startup()
+{
+	tail -F "/Users/$USER/Library/Logs/Unity/Editor.log" |
+	/Users/vcutten/workrepos/awkbackup/log-parse.awk | 
+	tee -a /Users/vcutten/workrepos/editor-log/editor-$(date "+%Y-%m-%d-%H:%M:%S").log | 
+	/Users/vcutten/workrepos/awkbackup/log-color.awk -v "red=$(tput setaf 1)" -v "reset=$(tput sgr0)" -v "green=$(tput setaf 2)" -v "yellow=$(tput setaf 3)" -v "cyan=$(tput setaf 6)"
+}
+
+ios-log-parse()
+{
+	awk '/VC:/{ match( $0, /[^"]*"?(VC:[^"]*)(".*)?/, arr ); print arr[1]; fflush();}' |
+	/Users/vcutten/workrepos/awkbackup/log-parse.awk | 
+	/Users/vcutten/workrepos/awkbackup/log-color.awk -v "red=$(tput setaf 1)" -v "reset=$(tput sgr0)" -v "green=$(tput setaf 2)" -v "yellow=$(tput setaf 3)" -v "cyan=$(tput setaf 6)"
+}
+
+startup-ldb-parse()
+{
+	gawk '/(]? INITIALIZER)/ { if( $5 == "COMPLETE:" ){ split($2,ac,":"); comp=(ac[1]*3600*1000+ac[2]*60*1000+ac[3]*1000); print (comp-start) " " $6 }else if( $5 == "STARTING:" ){ split($2,ac,":"); start=(ac[1]*3600*1000+ac[2]*60*1000+ac[3]*1000); }else{ print $0;} } END { print "===================================\nsum " sum}' | sort -n
+}
+startup-ldb-parse-nosort()
+{
+	gawk '/(]? INITIALIZER)/ { if( $5 == "COMPLETE:" ){ split($2,ac,":"); comp=(ac[1]*3600*1000+ac[2]*60*1000+ac[3]*1000); print (comp-start) " " $6 }else if( $5 == "STARTING:" ){ split($2,ac,":"); start=(ac[1]*3600*1000+ac[2]*60*1000+ac[3]*1000); }else{ print $0;} } END { print "===================================\nsum " sum}'
+}
+startup-parse()
+{
+	gawk '/(INITIALIZER|^ALL STARTUP)/ { if( $5 == "COMPLETE" ){ split($2,ac,":"); comp=(ac[1]*3600*1000+ac[2]*60*1000+ac[3]*1000); split($6,name,"."); printf("%40s %s\n", name[1], (comp-start) ); sum += (comp-start); }else if( $5 == "STARTING:" ){ split($2,ac,":"); start=(ac[1]*3600*1000+ac[2]*60*1000+ac[3]*1000); split($6,name,"."); run+=1; printf("%s------------\n", name[1]); }else if( $1 == "ALL" ){ print "===================================================\n" sum; sum = 0;} }'
+}
+hl()
+{
+	#ack --passthru $@
+	grep -E '^|'$@
+}
+# source ~/.pirate-setup/itermbkg
