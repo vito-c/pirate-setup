@@ -1,50 +1,72 @@
 #!/usr/local/bin/bash
+#--------------------------------------------------------------------------------
+# Information {
+#--------------------------------------------------------------------------------
+# vim: set sw=4 ts=4 sts=4 et tw=100 foldmarker={,} foldmethod=marker :
+#
+# By: Vito C.
+# }
+#--------------------------------------------------------------------------------
+# Environment {
+#--------------------------------------------------------------------------------
+# Source Files:
+if hash brew 2>/dev/null; then
+    if [[ -f $(brew --prefix)/share/bash-completion/bash_completion ]]; then
+        source $(brew --prefix)/share/bash-completion/bash_completion;
+	fi
+    # if [[ -f $(brew --prefix)/etc/bash_completion ]]; then
+    #     . $(brew --prefix)/etc/bash_completion
+    # fi
+fi
+if [[ -f ~/.pirate-setup/secrets ]]; then
+	source ~/.pirate-setup/secrets
+fi
+if [ -f ~/GDrive/pirate-setup/bash/facebook ]; then
+	source ~/GDrive/pirate-setup/bash/facebook
+fi
+if [ -f ~/GDrive/pirate-setup/bash/zynga ]; then
+	source ~/GDrive/pirate-setup/bash/zynga
+fi
 
-#############################################################################################################################
-#                                                                                                                           #
-#                                          Core CPU Values (Environment Variables                                           #
-#                                                                                                                           #
-#############################################################################################################################
-# xml sel -t -v '/items/item[@autocomplete="d*"]/title' ./address.xml
-
-##
-## Java And Ant OPTS
-##
-export LC_CTYPE=en_US.UTF-8
-export LC_ALL=en_US.UTF-8
-export ANT_OPTS="-Xmx1024m -Xms512m -XX:MaxPermSize=512m"
-export JAVA_OPTS="-Xmx2024m -Xms1024m -XX:MaxPermSize=512m"
-export HOSTNAME=$(hostname)
-export P4CONFIG=/Users/vcutten/.p4env
-
-##
-## Android SDK
-##
-export ANDROID_HOME=/usr/local/opt/android-sdk
-export ANDROID_NDK=/usr/local/opt/android-ndk
-export HOMEBREW_GITHUB_API_TOKEN="9a68042998770190facf2aedeab4a1794ac9a36f"
 if [[ -f /Users/vcutten/Library/Python/2.7/lib/python/site-packages/powerline/bindings/bash/powerline.sh ]]; then
 	/Users/vcutten/Library/Python/2.7/bin/powerline-daemon -q
 	export POWERLINE_COMMAND=/Users/vcutten/Library/Python/2.7/bin/powerline
 	export POWERLINE_CONFIG=/Users/vcutten/Library/Python/2.7/bin/powerline-config
 	source '/Users/vcutten/Library/Python/2.7/lib/python/site-packages/powerline/bindings/bash/powerline.sh'
 fi
+# Java And Ant OPTS
+export LC_CTYPE=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+export ANT_OPTS="-Xmx1024m -Xms512m -XX:MaxPermSize=512m"
+export JAVA_OPTS="-Xmx2024m -Xms1024m -XX:MaxPermSize=512m"
 
-# regen ssh pub key openssh -y -f id_rsa > id_rsa.pub
-
-#stty werase undef
-bind 'set bind-tty-special-chars off'
+# Bindings
+# bind 'set bind-tty-special-chars off'
 bind '\C-Space':complete
 bind '\C-i':menu-complete
 bind '"\C-f": forward-word'
 bind '"\C-b": backward-word'
-bind '"\u26F5": unix-word-rubout'
+# bind '"\u26F5": unix-word-rubout'
 bind '"\C-w": backward-kill-word'
 bind '"\e[B": history-search-forward'
 bind '"\e[A": history-search-backward'
-#bind '"\ew": backward-kill-word'
 
-# Override defaults
+# Android
+export ANDROID_HOME=/usr/local/opt/android-sdk
+export ANDROID_NDK=/usr/local/opt/android-ndk
+
+# Shopts
+shopt -s histappend
+shopt -s extglob
+shopt -s cdspell
+shopt -s nocaseglob
+shopt -u expand_aliases
+shopt -s globstar
+shopt -s lithist cmdhist
+
+# Use Vim for editor
+export HOMEBREW_EDITOR=vim
+export EDITOR=vim
 #export HISTSIZE=3600
 #export PROMPT_COMMAND='history -a; history -r'
 #PROMPT_COMMAND="history -a"
@@ -55,13 +77,6 @@ export HISTSIZE=100000
 #PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
 export HISTIGNORE="ls:ll:fg:eb:ev:fc:pwd:exit:history:cb"
 #export HISTSIZE PROMPT_COMMAND HISTCONTROL
-shopt -s histappend
-shopt -s extglob
-shopt -s cdspell
-shopt -s nocaseglob
-shopt -u expand_aliases
-shopt -s globstar
-shopt -s lithist cmdhist
 
 #export SCALA_HOME=/Users/vcutten/workrepos/apparat/scala-2.8.2.final
 
@@ -75,8 +90,43 @@ shopt -s lithist cmdhist
 #export LESS_TERMCAP_so=$'\E[38;5;246m'    # begin standout-mode - info box
 #export LESS_TERMCAP_ue=$'\E[0m'           # end underline
 #export LESS_TERMCAP_us=$'\E[04;38;5;146m' # begin underline
-export HOMEBREW_EDITOR=vim
-export EDITOR=vim
+
+# Configs
+export HOSTNAME=$(hostname)
+export P4CONFIG=/Users/vcutten/.p4env #$HOME
+#export HOMEBREW_GITHUB_API_TOKEN="9a68042998770190facf2aedeab4a1794ac9a36f"
+# }
+#--------------------------------------------------------------------------------
+
+
+#############################################################################################################################
+#                                                                                                                           #
+#                                          Core CPU Values (Environment Variables                                           #
+#                                                                                                                           #
+#############################################################################################################################
+# xml sel -t -v '/items/item[@autocomplete="d*"]/title' ./address.xml
+
+
+# regen ssh pub key openssh -y -f id_rsa > id_rsa.pub
+
+#stty werase undef
+
+# Override defaults
+
+###
+# GIT BS!
+##
+git-pump-current()
+{
+    cb=$(git rev-parse --abbrev-ref HEAD)
+    git stash
+    git checkout master
+    git pull upstream master
+    git checkout ${cb}
+    git pull upstream master
+    git stash pop
+}
+
 
 #############################################################################################################################
 #                                                                                                                           #
@@ -85,16 +135,67 @@ export EDITOR=vim
 #############################################################################################################################
 unalias ll 2>/dev/null
 unalias ls 2>/dev/null
+export ECLIPSE_HOME="/Applications/Eclipse.app/Contents/Eclipse"
+s3dax()
+{
+    command /usr/local/bin/s3cmd -c ~/.s3confs/s3audax.cfg "$@"
+}
+
+s3prod()
+{
+    command /usr/local/bin/s3cmd -c ~/.s3confs/s3prod.cfg "$@"
+}
+
+lockme()
+{
+    open /System/Library/Frameworks/ScreenSaver.framework/Versions/A/Resources/ScreenSaverEngine.app
+}
+
+#export NVIM_LISTEN_ADDRESS=8000
+
+nv()
+{
+    command /usr/local/bin/nvim "${@}"
+}
+
+vi() {
+    start_addr=8000
+    if [[ -z $NEOVIM_LISTEN_ADDRESS ]]; then
+        # not running inside nvim
+        nvim "$@"
+    else
+        python -c "from neovim import attach; nvim = attach('tcp', '127.0.0.1','$start_addr'); nvim.command('args $@');"
+    fi
+}
+
+jl()
+{
+    if [[ $1 == "up" ]]; then
+        command launchctl list | grep -v '^-'
+    elif [[ $1 == "down" ]]; then
+        command launchctl list | grep '^-'
+    elif [[ $1 == "list" ]]; then
+        if [[ -z $2 ]]; then
+            command launchctl list
+        else
+            command launchctl list $2 | sed -e 's/;/,/g' -e 's/=/:/' -e 's/(/[/' -e 's/),/]/' -e 's/},/}/' | gsed 'N;s/,\n\t*]/\n]/;' | jq '.'
+        fi
+    else
+        command launchctl "${@}"
+    fi
+}
+
+s3rally()
+{
+    command /usr/local/bin/s3cmd -c ~/.s3confs/s3rally-dev.cfg "$@"
+}
 #TODO: export your java home too brah
 if [[ $(uname) =~ Darwin || $(uname) =~ FeeBSD ]]; then
 	# export FLEX_HOME="/usr/local/bin/flexsdks/4.6.0.23201B"
 	# export PAGER=vimpager
-	if [[ -f ~/.pirate-setup/secrets ]]; then 
-		source ~/.pirate-setup/secrets
-	fi
 	export FLEX_HOME=/Users/vcutten/local/flash/flex/sdk
 	export vimdir=$HOME/.vim
-	if [[ $HOSTNAME =~ "vito-mbp" ]]; then                                                                           
+	if [[ $HOSTNAME =~ "vito-mbp" ]]; then
 		export HOSTSTUB="vito-mbp";
 	elif [[ $HOSTNAME =~ "vito-tower" ]]; then
 		export HOSTSTUB="vito-tower";
@@ -104,12 +205,8 @@ if [[ $(uname) =~ Darwin || $(uname) =~ FeeBSD ]]; then
 		export HOSTSTUB=$HOSTNAME;
 	fi
 	export JAVA_HOME=$(/usr/libexec/java_home)
+    export SCALA_HOME="/usr/local/Cellar/scala/2.11.7"
 
-	if hash brew 2>/dev/null; then
-		if [[ -f `brew --prefix`/share/bash-completion/bash_completion ]]; then
-			source `brew --prefix`/share/bash-completion/bash_completion;
-		fi
-	fi
 
 	search-history(){
 		history | grep -v history | gawk '{ $1=""; print $0 }' | sort | uniq | grep $1
@@ -125,7 +222,7 @@ if [[ $(uname) =~ Darwin || $(uname) =~ FeeBSD ]]; then
 	}
 
 	omnisharp() {
-		if [[ "$1" == "" ]]; then 
+		if [[ "$1" == "" ]]; then
 			slnloc=~/workrepos/mobile/FarmMobile/FarmMobile.sln;
 		else
 			slnloc="$1";
@@ -144,16 +241,16 @@ if [[ $(uname) =~ Darwin || $(uname) =~ FeeBSD ]]; then
 		fi
 	}
 
-	eb() 
-	{ 
+	eb()
+	{
 		echo -e "\033];BASHRC\007";
 		#trap 'echo -e "\033];bash\007"' SIGTERM SIGKILL SIGQUIT
 		#trap 'echo -e "\033];bash\007";' EXIT
-		command /usr/local/bin/vim $@ ~/.pirate-setup/bashrc;
+		command /usr/local/bin/nvim $@ ~/GDrive/pirate-setup/bashrc;
 	}
 	vg() { vim $@ ~/.pirate-setup/gitconfig; }
-	ev() { vim $@ ~/.vim/vimrc; }
-	cb() { source ~/.bashrc; }
+	ev() { nvim $@ ~/.nvim/rc/vimrc; }
+	cb() { source ~/.bash_profile; }
 	ls() { command ls -G "$@"; }
 	fn() { command find . -iname "$@"; }
 	ehco() { command echo "$@"; }
@@ -169,40 +266,43 @@ if [[ $(uname) =~ Darwin || $(uname) =~ FeeBSD ]]; then
 	gfc() {
 		find . -name \*.cs -exec grep -in "$@" {} +
 	}
-	ff() { 
-		if [[ "$2" == "" ]]; then 
+	ff() {
+		if [[ "$2" == "" ]]; then
 			type='*.*';
 		else
 			type='*.'"$2";
 		fi
 		#echo "root: $1  stem: $type"
-		if [[ "$3" == "" ]]; then 
-			find . \( -name .\*~ -o -name \*.meta -prune -o -name \*.prefab -prune \) -o -iname "$1""$type" -print; 
+		if [[ "$3" == "" ]]; then
+			find . \( -name .\*~ -o -name \*.meta -prune -o -name \*.prefab -prune \) -o -iname "$1""$type" -print;
 		else
-			find "$3" \( -name .\*~ -o -name \*.meta -prune -o -name \*.prefab -prune \) -o -iname "$1""$type" -print; 
+			find "$3" \( -name .\*~ -o -name \*.meta -prune -o -name \*.prefab -prune \) -o -iname "$1""$type" -print;
 		fi
 	}
-	fcs() { 
-		if [[ "$2" == "" ]]; then 
+	fcs() {
+		if [[ "$2" == "" ]]; then
 			type='*.cs';
 		else
 			type='*.'"$2";
 		fi
 		#echo "root: $1  stem: $type"
-		if [[ "$3" == "" ]]; then 
-			find . \( -name .\*~ -o -name \*.meta -prune \) -o -iname "$1""$type" -print; 
+		if [[ "$3" == "" ]]; then
+			find . \( -name .\*~ -o -name \*.meta -prune \) -o -iname "$1""$type" -print;
 		else
-			find "$3" \( -name .\*~ -o -name \*.meta -prune \) -o -iname "$1""$type" -print; 
+			find "$3" \( -name .\*~ -o -name \*.meta -prune \) -o -iname "$1""$type" -print;
 		fi
 	}
-export GREP_OPTIONS='--color=auto -i'
-	#grep() { command grep --color='auto' "$@"; }
+#export GREP_OPTIONS='--color=auto -i'
+
+	#grep() { command /usr/local/bin/grep -in --color='auto' "$@"; }
+	gr() { command /usr/local/bin/grep -in --color='auto' "$@"; }
 	ll() { command ls -lGh "$@"; }
 	la() { command ls -lGha "$@"; }
 	# might be causing vim diff issues
-	vimdiff() { command vim -d "$@"; }
-	vif() { 
-		#if [[ "$2" == "" || "$2" == "*.cs" ]]; then 
+	nd() { command nvim -d "$@"; }
+    vimdiff() { command nvim -d "$@"; }
+	vif() {
+		#if [[ "$2" == "" || "$2" == "*.cs" ]]; then
 #re='^[0-9]+$'
 #if ! [[ $yournumber =~ $re ]] ; then
 #   echo "error: Not a number" >&2; exit 1
@@ -210,10 +310,10 @@ export GREP_OPTIONS='--color=auto -i'
 
 		if [[ "$(pwd -P)" =~ $HOME/workrepos/farm3/dev.* ]]; then
 			echo -e "\033];UNITY\007"
-			if [[ -f "$1" ]]; then 
+			if [[ -f "$1" ]]; then
 				command vim --servername UNITY --remote-silent "$@";
 			else
-				command vim --servername UNITY --remote-silent $(fw "$@"); 
+				command vim --servername UNITY --remote-silent $(fw "$@");
 			fi
 		else
 			command vim $(fw "$@" );
@@ -222,27 +322,26 @@ export GREP_OPTIONS='--color=auto -i'
 	# pass profile name you want to set eg Dark or Light
 	setProfile() {
 		echo -e "\033]50;SetProfile=$1\a"
-	}  
+	}
 else
-	export FLEX_HOME="/var/lib/flexsdks/4.6.0.23201B"
-	export HOSTSTUB=$(regex='.*([A-Za-z]{3}-[0-9][0-9]).*'; [[ "$HOSTNAME" =~ $regex ]] && echo "${BASH_REMATCH[1]}");
-	if [[ $HOSTSTUB == "" ]]; then
-    	export HOSTSTUB=$(hostname -s);
-	fi
-	eb() { vim $@ ~/.bash_awesome; }
-	cb() { source ~/.bash_awesome; }
-	ls() { command ls --color=always "$@"; }
-	grep() { command grep --color=always "$@"; }
-	ll() { command ls --color=always -lh "$@"; }
-	la() { command ls --color=always -lha "$@"; }
+    export FLEX_HOME="/var/lib/flexsdks/4.6.0.23201B"
+    export HOSTSTUB=$(regex='.*([A-Za-z]{3}-[0-9][0-9]).*'; [[ "$HOSTNAME" =~ $regex ]] && echo "${BASH_REMATCH[1]}");
+    if [[ $HOSTSTUB == "" ]]; then
+        export HOSTSTUB=$(hostname -s);
+    fi
+    eb() { nvim $@ ~/.bash_awesome; }
+    cb() { source ~/.bash_awesome; }
+    ls() { command ls --color=always "$@"; }
+    ll() { command ls --color=always -lh "$@"; }
+    la() { command ls --color=always -lha "$@"; }
 fi
 
 export FCSH=$FLEX_HOME/bin/fcsh
 export PLAN9=/usr/local/plan9
-PATH="/usr/local/bin:/System/Library/Frameworks/Python.framework/Versions/2.7/bin/:$PATH:/Users/vcutten/Library/Python/2.7/bin:~/.pirate-setup/bin:/usr/texbin"
-
-#export PS1="\[\e[36;1m\][\A] \[\e[0;35m\]$HOSTSTUB \[\e[31;1m\]\w> \[\e[0m\]"                                     
-#export PS2="\[\e[31;1m\]> \[\e[0m\]"                                                                              
+PATH="/usr/local/bin:/System/Library/Frameworks/Python.framework/Versions/2.7/bin/:$PATH:/Users/vcutten/Library/Python/2.7/bin:~/.pirate-setup/bin:/usr/texbin:/code/RoboCopUnicorn/scripts/path:/usr/local/opt/go/libexec/bin"
+export GOPATH="/Users/vitocutten/playground/go/libs"
+#export PS1="\[\e[36;1m\][\A] \[\e[0;35m\]$HOSTSTUB \[\e[31;1m\]\w> \[\e[0m\]"
+#export PS2="\[\e[31;1m\]> \[\e[0m\]"
 #export PS1="\[\e[36;1m\][\[\e[0;35m\]$HOSTSTUB\[\e[36;1m\]] \[\e[0;35m\]$HOSTSTUB \[\e[31;1m\]\w> \[\e[0m\]"
 #export PS2="\[\e[31;1m\]> \[\e[0m\]"
 
@@ -297,16 +396,16 @@ bump()
 
 blame-game()
 {
-	echo "" | pbcopy; 
-	for file in $1; do 
-		line="---------$file----------"; 
-		bar=$(git blame --line-porcelain "$file" | sed -n 's|^author||p' | sed -E '/(tz|time|mail)/d' | sort | uniq -c | sort -rn); printf '%s\n%s\n%s\n' "$(pbpaste)" "$line" "$bar" | pbcopy; 
+	echo "" | pbcopy;
+	for file in $1; do
+		line="---------$file----------";
+		bar=$(git blame --line-porcelain "$file" | sed -n 's|^author||p' | sed -E '/(tz|time|mail)/d' | sort | uniq -c | sort -rn); printf '%s\n%s\n%s\n' "$(pbpaste)" "$line" "$bar" | pbcopy;
 	done;
 }
 
 # find ./FarmMobile/Assets/Scripts -iname \*test\*.cs -print -exec sh -c 'file=$0; git --no-pager blame --line-porcelain "$file" | sed -n "s|^author||p" | sed -E "/(tz|time|mail)/d" | sort | uniq -c | sort -rn ' {} \;
 
-list-size() 
+list-size()
 {
 	du -sk "$@" | sort -rn | awk -F '\t' -v OFS='\t' '{if ($1 > 1048576) $1 = sprintf("%.1fG",$1/1048576); else if ($1 > 1024) $1 = sprintf("%.1fM",$1/1024); else $1 = sprintf("%sK",$1)} 1'
 	#du -sk "$@" | sort -n | awk '{if ($1 > 1048576) printf("%.1fG\t%s\n",$1/1048576,$2); else if ($1 > 1024) printf("%.1fM\t%s\n",$1/1024,$2); else printf("%sK\t%s\n",$1,$2) }'
@@ -339,30 +438,30 @@ yumdiff()
 
 badassets()
 {
-	for line in $(grep -irn 'jxr' assets/**/*.json | sed 's|[\"|,]||g' | sed "s|\'||g" | awk '{print $1 "," $3}'); do 
+	for line in $(grep -irn 'jxr' assets/**/*.json | sed 's|[\"|,]||g' | sed "s|\'||g" | awk '{print $1 "," $3}'); do
 		img="assets/${line#*,}";
-		json=${line%,*}; 
-		if [[ ! -f $img ]]; then 
+		json=${line%,*};
+		if [[ ! -f $img ]]; then
 			echo "file: $json   img: $img";
-		fi 
+		fi
 	done
 }
 
-#hostStub()                                                                                                        
-#{                                                                                                                 
-#	if [[ $HOSTNAME =~ "local" ]]; then                                                                           
-#		echo $(hostname -s);                                                                                      
-#	else                                                                                                          
+#hostStub()
+#{
+#	if [[ $HOSTNAME =~ "local" ]]; then
+#		echo $(hostname -s);
+#	else
 #		if [[ $(regex='.*([A-Za-z]{3}-[0-9][0-9]).*'; [[ "$HOSTNAME" =~ $regex ]] && echo "${BASH_REMATCH[1]}") =~ "" ]]; then
 #			echo $(hostname -s);
 #		else
-#			echo $(regex='.*([A-Za-z]{3}-[0-9][0-9]).*'; [[ "$HOSTNAME" =~ $regex ]] && echo "${BASH_REMATCH[1]}"); 
+#			echo $(regex='.*([A-Za-z]{3}-[0-9][0-9]).*'; [[ "$HOSTNAME" =~ $regex ]] && echo "${BASH_REMATCH[1]}");
 #		fi
-#	fi                                                                                                            
-#}                                                                                                                 
+#	fi
+#}
 #
 #alias ld="ls -lh !(Icon?)"
-#ll { 
+#ll {
 #	if [[ $1 =~ "-" ]]; then
 #		ls -lh $1 !(Icon?) $2
 #	else
@@ -403,7 +502,7 @@ checkPort()
 #                                                                                                                           #
 #############################################################################################################################
 
-ssb(){ echo -e "\033];brobot\007"; ssh farm2-brobot-01.zc2.zynga.com $@; }   
+ssb(){ echo -e "\033];brobot\007"; ssh farm2-brobot-01.zc2.zynga.com $@; }
 ssvt(){ ssh vcutten@vito-tower.local $@; }
 ssdt(){ ssh redhand@destro-tower.local $@; }
 ssmb(){ ssh vcutten@vito-mbp.local $@; }
@@ -431,12 +530,12 @@ mini09(){ ssh z_farmville2_build@$MINI09 $@; }
 ssfstage() { echo -e "\033];fstage\007"; ssh ${VILLE}-staging-zcon-01.zc2.zynga.com $@; }
 #farm2-staging-web-fb-22
 
-openFlex()                                                                                               
-{                                                                                                                 
-	open -n "/Applications/Adobe Flash Builder 4.6/Adobe Flash Builder 4.6.app"                                   
-}                                                                                                                 
-                                                                                                                  
-#RedTamarin 
+openFlex()
+{
+	open -n "/Applications/Adobe Flash Builder 4.6/Adobe Flash Builder 4.6.app"
+}
+
+#RedTamarin
 #redrun
 #{
 #	#/Users/vcutten/workspaces/${AWESOMEVILLE}-files/vcutten-repo/prototype/RedServer/bin/redshell $1
@@ -448,7 +547,7 @@ openFlex()
 #	java -jar /Users/vcutten/workspaces/${AWESOMEVILLE}-files/vcutten-repo/prototype/RedServer/bin/asc.jar -AS3 -strict\
 #			-import /Users/vcutten/workspaces/${AWESOMEVILLE}-files/vcutten-repo/prototype/RedServer/bin/builtin.abc\
 #			-import /Users/vcutten/workspaces/${AWESOMEVILLE}-files/vcutten-repo/prototype/RedServer/bin/toplevel.abc\
-#			-import /Users/vcutten/workspaces/${AWESOMEVILLE}-files/vcutten-repo/prototype/RedServer/bin/avmglue.abc $1; 
+#			-import /Users/vcutten/workspaces/${AWESOMEVILLE}-files/vcutten-repo/prototype/RedServer/bin/avmglue.abc $1;
 #}
 
 #../redtamarin/bin-release/redshell ./src/ASIncludes.abc ./src/rtServer.abc -- 1000 8888 ~/dev/kingdoms/assets 0.0.0.0
@@ -507,12 +606,12 @@ ldapquick()
 #############################################################################################################################
 checkService()
 {
-	if ps ax | grep -v grep | grep $1 > /dev/null
-	then
-	    echo "$1 service running, everything is fine"
-	else
-		echo "$1 is not running"
-	fi
+    if ps ax | grep -v grep | grep $1 > /dev/null
+    then
+        echo "$1 service running, everything is fine"
+    else
+        echo "$1 is not running"
+    fi
 }
 
 alive()
@@ -614,7 +713,7 @@ copy-job()
 #=======
 #	pass="$1"
 #	job_name="$2"
-#	if [[ "$3" == "" ]]; then 
+#	if [[ "$3" == "" ]]; then
 #		new_job_name="$1"
 #	else
 #		new_job_name="$3"
@@ -725,19 +824,19 @@ cvl_test()
 
 access_token()
 {
-	if [[ -z $1 ]]; then
-		APP_ID=$DEFAULT_APP_ID;
-	#user passed in a app name you should be able to set the values
-	#ie access_token cvl-dev ...easiest way to do this is to change config to json values
-	fi
-	if [[ -z $2 ]]; then
-		APP_SEC=$DEFAULT_APP_SEC;
-	fi
+    if [[ -z $1 ]]; then
+        APP_ID=$DEFAULT_APP_ID;
+        #user passed in a app name you should be able to set the values
+        #ie access_token cvl-dev ...easiest way to do this is to change config to json values
+    fi
+    if [[ -z $2 ]]; then
+        APP_SEC=$DEFAULT_APP_SEC;
+    fi
 
-	curl -s -F client_id=$APP_ID \
-	     -F client_secret=$APP_SEC \
-		 -F grant_type=client_credentials $GRAPH/oauth/access_token |
-	sed -nE 's|access_token=(.*)$|\1|p';
+    curl -s -F client_id=$APP_ID \
+        -F client_secret=$APP_SEC \
+        -F grant_type=client_credentials $GRAPH/oauth/access_token |
+    sed -nE 's|access_token=(.*)$|\1|p';
 }
 
 get_friends()
@@ -768,7 +867,7 @@ updateDevUser()
 	curl -F "name=$name" -F "password=$password" $GRAPH/$fbid?access_token=$acc_tkn;
 }
 
-# Script needs to be run from repo root directory. 
+# Script needs to be run from repo root directory.
 manage_allApps()
 {
 	apps=(art blue feature{10..20} feature0{1..9} green rainbow red tractor trunk silver);
@@ -789,26 +888,26 @@ test_v2d2()
 }
 
 grepjson()
-{ 
-	find . -name .json -o -type f -exec grep --color=always "$@" /dev/null {} +; 
+{
+    find . -name .json -o -type f -exec grep --color=always "$@" /dev/null {} +;
 }
 
-grepassetfree() 
-{ 
+grepassetfree()
+{
 	grep -E . -regex ".*\.(png|f3d|jxr|jpg|jegp|gif|json)" -prune -o -type f -exec grep --color=always "$@" /dev/null {} +;
 }
 
 # git(){ command git "?@" ; say }
 
 # Find non-svn files then grep them
-grepsvn() 
-{ 
-	find . -name .svn -prune -o -type f -exec grep "$@" /dev/null {} +; 
+grepsvn()
+{
+	find . -name .svn -prune -o -type f -exec grep "$@" /dev/null {} +;
 }
 
-function grepfiles() 
-{ 
-	find . -name "$1" -exec grep -in --color="always" "$2" /dev/null {} +; 
+function grepfiles()
+{
+	find . -name "$1" -exec grep -in --color="always" "$2" /dev/null {} +;
 }
 
 navigate()
@@ -874,7 +973,7 @@ p4move()
 }
 barncopy()
 {
-	find . -iname $1 -exec sh -c 'file={}; 
+	find . -iname $1 -exec sh -c 'file={};
 		dir=/Users/vcutten/workrepos/farm3/branches/dev/src/FarmMobile/${file#./*};
 		if [ ! -d ${dir} ]; then mkdir -p ${dir}; echo "created ${dir}"; fi;
 		cp ${file} /Users/vcutten/workrepos/farm3/branches/dev/src/FarmMobile/${file#./*};' \;
@@ -893,25 +992,35 @@ barncopy()
 #alias p4r='__p4_find_command revert $*'
 # perforce commands
 
+v2d2-addjoke()
+{
+    v2d2dir="/Users/vitocutten/playground/V2D2-old"
+    v2d2ans="${v2d2dir}/src/org/v2d2/skype/jokes/Answers.java"
+    v2d2cls="${v2d2dir}/src/org/v2d2/skype/jokes/Clues.java"
+    printf '%s\n' 161i "        \"${1}\"," . w | ed -s ${v2d2cls}
+    printf '%s\n' 801i "        \"${2}\"," . w | ed -s ${v2d2ans}
+    git --work-tree=${v2d2dir} --git-dir=${v2d2dir}/.git diff -- ${v2d2ans} ${v2d2cls}
+}
+
 export DEV=$HOME/workrepos/farm3/branches/dev/src;
 export dev=$DEV;
-diff-dev() 
+diff-dev()
 {
 	diff <(find ../dev -name $1 -exec md5 {} + | gsed 's|./dev||g') <(find . -name $1 -exec md5 {} +)
 }
 
-p4-art-cleanup() 
-{ 
-	for type in {"controller","mask","meta","png","psd","xml","fbx","anim","jpg","prefab","json","mat","tga","properties"}; do 
+p4-art-cleanup()
+{
+	for type in {"controller","mask","meta","png","psd","xml","fbx","anim","jpg","prefab","json","mat","tga","properties"}; do
 		p4 reopen -c $1 //farm3/....$type;
-	done; 
+	done;
 }
 
 getblob()
 {
 	ZID="${LZID}";
 	BLOB="player";
-	APPID="${FVN_ZLIVE_APP}"; 
+	APPID="${FVN_ZLIVE_APP}";
 	if [[ $1 != "" ]]; then ZID="$1"; fi;
 	if [[ $2 != "" ]]; then BLOB="$2"; fi;
 	if [[ $3 != "" ]]; then APPID="$3"; fi;
@@ -926,7 +1035,18 @@ getblob()
 
 setblob()
 {
-	#curl -i -X 'PUT' 'https://api.zynga.com/storage/v1/app/${FVN_ZLIVE_APP}/blob/player/user/${LZID}' -H 'app-id:${FVN_ZLIVE_APP}' -H 'auth-type:app' -H 'Content-Type: application/json' -d '{ "payload":{ "cas": "'$CAS'", "value":"'"$(getblob  | jq '(.resources[] | select(.id == "consu_ribbon" ) | .amount)=5000 | .leaderboardName="GodFather"' | gsed 's|"|\\"|g' | xargs | gsed 's|"|\\"|g')"'"}}'
+	# curl -i -X 'PUT'
+    #   'https://api.zynga.com/storage/v1/app/${FVN_ZLIVE_APP}/blob/player/user/${LZID}'
+    #   -H 'app-id:${FVN_ZLIVE_APP}'
+    #   -H 'auth-type:app'
+    #   -H 'Content-Type: application/json'
+    #   -d '{ "payload":
+    #             { "cas": "'$CAS'",
+    #                 "value":"'"$( getblob
+    #                   | jq '( .resources[]
+    #                     | select(.id == "consu_ribbon" )
+    #                     | .amount )=5000
+    #                     | .leaderboardName="GodFather"' | gsed 's|"|\\"|g' | xargs | gsed 's|"|\\"|g')"'"}}'
 	echo "no op";
 }
 
@@ -951,7 +1071,7 @@ leaderboard_getcheater_ids()
 leaderboard_settings()
 {
 	ZID="${LZID}";
-	APPID="${FVN_ZLIVE_APP}"; 
+	APPID="${FVN_ZLIVE_APP}";
 	ZAPI="https://api.zynga.com";
 	curl -s -X 'GET' "${ZAPI}/leaderboards/v2/app/${APPID}/settings" -H "app-id: ${APPID}" -H "player-id: ${ZID}" -H 'auth-type: app'
 }
@@ -962,7 +1082,7 @@ leaderboard_get_players()
 	BOARD="countyfair-dev10";
 	START=0;
 	END=40;
-	APPID="${FVN_ZLIVE_APP}"; 
+	APPID="${FVN_ZLIVE_APP}";
 	if [[ -n ${1+_} ]]; then ZID="$1"; fi;
 	if [[ -n ${2+_} ]]; then BOARD="$2"; fi;
 	if [[ -n ${3+_} ]]; then START="$3"; fi;
@@ -979,7 +1099,7 @@ leaderboard_get()
 	BOARD="countyfair-dev10";
 	START=0;
 	END=40;
-	APPID="${FVN_ZLIVE_APP}"; 
+	APPID="${FVN_ZLIVE_APP}";
 	if [[ -n ${1+_} ]]; then BOARD="$1"; fi;
 	if [[ -n ${2+_} ]]; then APPID="$2"; fi;
 	ZAPI="https://api.zynga.com"
@@ -996,7 +1116,7 @@ leaderboard_delete_player()
 {
 	ZID="${LZID}";
 	BOARD="countyfair-dev10";
-	APPID="${FVN_ZLIVE_APP}"; 
+	APPID="${FVN_ZLIVE_APP}";
 	if [[ -n ${1+_} ]]; then ZID="$1"; fi;
 	if [[ -n ${2+_} ]]; then BOARD="$2"; fi;
 	ZAPI="https://api.zynga.com"
@@ -1008,7 +1128,7 @@ leaderboard_delete_player()
 leaderboard_get_player()
 {
 	ZID="${LZID}";
-	APPID="${FVN_ZLIVE_APP}"; 
+	APPID="${FVN_ZLIVE_APP}";
 	if [[ -n ${1+_} ]]; then ZID="$1"; fi;
 	if [[ -n ${2+_} ]]; then APPID="$2"; fi;
 	ZAPI="https://api.zynga.com"
@@ -1021,7 +1141,7 @@ leaderboard_set_player()
 {
 	ZID="${LZID}";
 	BOARD="countyfair-dev10";
-	APPID="${FVN_ZLIVE_APP}"; 
+	APPID="${FVN_ZLIVE_APP}";
 	if [[ -n ${2+_} ]]; then ZID="$2"; fi;
 	if [[ -n ${3+_} ]]; then BOARD="$3"; fi;
 	if [[ -n ${4+_} ]]; then APPID="$4"; fi;
@@ -1031,8 +1151,8 @@ leaderboard_set_player()
 
 #leaderboard_cheat()
 #{
-#	topscore=$(leaderboard_get_players | jq  '.data["countyfair-dev10"]["'${LZID}'"][0].score'); 
-#	leaderboard_get_player | 
+#	topscore=$(leaderboard_get_players | jq  '.data["countyfair-dev10"]["'${LZID}'"][0].score');
+#	leaderboard_get_player |
 #		jq '.data["'$LZID'"]["countyfair-dev10"][0]' |
 #		jq '{extra, score, "tier":"level-low"}' |
 #		jq '.score ='"$topscore"'' |
@@ -1040,7 +1160,7 @@ leaderboard_set_player()
 #}
 
 readtest()
-{ 
+{
 	if [ -n "${*+_}" ]; then
 		printf '***%s***\n' "$@";
 	else
@@ -1051,7 +1171,7 @@ readtest()
 #foo(){ if [[ -z ${*+_} ]]; then while read line; do printf "$line" | gsed 's/l/d/g'; done; else printf '+++%s+++\n' "$*"; fi; }; echo "hello world" | foo
 jsonify()
 {
-	if [[ -z ${*+_} ]]; then 
+	if [[ -z ${*+_} ]]; then
 		gsed -E 's|\\"|"|g; s/(^"|"$)//g' | jq '.';
 	else
 		printf "$*" | gsed -E 's|\\"|"|g; s/(^"|"$)//g' | jq '.';
@@ -1060,7 +1180,7 @@ jsonify()
 
 jsonstringy()
 {
-	if [[ -z ${*+_} ]]; then 
+	if [[ -z ${*+_} ]]; then
 		jq -c '.' | gsed 's|"|\\"|g; s|^{|"{|g; s|}$|}"|g';
 	else
 		printf "$*" | jq -c '.' | gsed 's|"|\\"|g; s|^{|"{|g; s|}$|}"|g';
@@ -1082,7 +1202,7 @@ fi
 zlive_identities()
 {
 	ZID="${LZID}";
-	APPID="${FVN_ZLIVE_APP}"; 
+	APPID="${FVN_ZLIVE_APP}";
 	SNIDS="1,22,31,104";
 	if [[ -n ${1+_} ]]; then ZID="$1"; fi;
 	if [[ -n ${2+_} ]]; then APPID="$2"; fi;
@@ -1099,7 +1219,7 @@ zlive_disassociate()
 {
 
 	ZID="${LZID}";
-	APPID="${FVN_ZLIVE_APP}"; 
+	APPID="${FVN_ZLIVE_APP}";
 	SNIDS="1,22,31,104";
 	if [[ -n ${1+_} ]]; then ZID="$1"; fi;
 	if [[ -n ${2+_} ]]; then APPID="$2"; fi;
@@ -1149,14 +1269,14 @@ clean-mxmlc()
 	awk '/\/Users/,/ *\^/ {printf "%s\0",$0} / *\^/ {print ""} END {print ""}' |
 		sort -t'\0' -k3,3 |
 		tr '\0' '\n' |
-		gsed '/^$/d' 
+		gsed '/^$/d'
 		# | filter needs to be added here
 		# | number-mxmlc
 }
 
-number-mxmlc() 
+number-mxmlc()
 {
-	gawk '/\/Users/ {count++; prev=0; } { if(prev != count){ printf("%d: %s\n", count, $0); } else { print; }  prev=count; }' | 
+	gawk '/\/Users/ {count++; prev=0; } { if(prev != count){ printf("%d: %s\n", count, $0); } else { print; }  prev=count; }' |
 		gsed 's|/Users/.*/StagingArea/||g' |
 		gsed 's|: col:|:\n\tcol:|g'
 }
@@ -1175,13 +1295,11 @@ vimc()
 {
 	UNITY_RUNNING=$( command /usr/local/bin/vim --servername UNITY --remote-send "" && echo $? );
 	osascript ~/.pirate-setup/pirate-wench/unity-cli.scpt "$@"
-	if [[ $UNITY_RUNNING ]]; then 
+	if [[ $UNITY_RUNNING ]]; then
 		command /usr/local/bin/vim --servername UNITY --remote-silent "$@";
 	fi
 }
 
-source ~/.pirate-setup/bash/facebook
-source ~/.pirate-setup/bash/zynga
 
 #cat app.json | jq -r '.[] | select( .name == "''" ) | .facebook.id '
 # md finder
@@ -1223,7 +1341,7 @@ gdp4()
 	if [ $# -eq 0 ]; then
 		git diff p4/master
 	elif [[ $1 == "l" || $1 == "name" ]]; then
-		git diff --name-only p4/master 
+		git diff --name-only p4/master
 	elif [[ $1 == "n" ]]; then
 		git diff --name-only p4/master | nl -v0
 	else
@@ -1240,8 +1358,8 @@ gdp4_completer()
 	local branch;
 
 	while read -r branch; do list+=("${branch##*/}"); done < <(git diff --name-only p4/master)
-	for word in "${list[@]}"; do 
-		[[ $word = "${COMP_WORDS[COMP_CWORD]}"* ]] && COMPREPLY+=("$word"); 
+	for word in "${list[@]}"; do
+		[[ $word = "${COMP_WORDS[COMP_CWORD]}"* ]] && COMPREPLY+=("$word");
 	done
 
 	#for (( i=0; i < ${#list[@]}; i++ )); do
@@ -1300,7 +1418,7 @@ lget_gp4_diffs()
 
 gdfn()
 {
-	git diff --name-only 
+	git diff --name-only
 }
 
 gdf()
@@ -1318,25 +1436,25 @@ ios-log-startup()
 {
 	logname=ios-$(date "+%Y-%m-%d-%H:%M:%S")
 	tail -F /Users/vcutten/workrepos/lldb.log |
-	tee -a /Users/vcutten/workrepos/ios-log/${logname}.log | 
+	tee -a /Users/vcutten/workrepos/ios-log/${logname}.log |
 	awk '/VC:/{ match( $0, /[^"]*"?(VC:[^"]*)(".*)?/, arr ); print arr[1]; fflush();}' |
-	/Users/vcutten/workrepos/awkbackup/log-parse.awk | 
-	tee -a /Users/vcutten/workrepos/ios-log/${logname}-vc.log | 
+	/Users/vcutten/workrepos/awkbackup/log-parse.awk |
+	tee -a /Users/vcutten/workrepos/ios-log/${logname}-vc.log |
 	/Users/vcutten/workrepos/awkbackup/log-color.awk -v "red=$(tput setaf 1)" -v "reset=$(tput sgr0)" -v "green=$(tput setaf 2)" -v "yellow=$(tput setaf 3)" -v "cyan=$(tput setaf 6)"
 }
 
 editor-log-startup()
 {
 	tail -F "/Users/$USER/Library/Logs/Unity/Editor.log" |
-	/Users/vcutten/workrepos/awkbackup/log-parse.awk | 
-	tee -a /Users/vcutten/workrepos/editor-log/editor-$(date "+%Y-%m-%d-%H:%M:%S").log | 
+	/Users/vcutten/workrepos/awkbackup/log-parse.awk |
+	tee -a /Users/vcutten/workrepos/editor-log/editor-$(date "+%Y-%m-%d-%H:%M:%S").log |
 	/Users/vcutten/workrepos/awkbackup/log-color.awk -v "red=$(tput setaf 1)" -v "reset=$(tput sgr0)" -v "green=$(tput setaf 2)" -v "yellow=$(tput setaf 3)" -v "cyan=$(tput setaf 6)"
 }
 
 ios-log-parse()
 {
 	awk '/VC:/{ match( $0, /[^"]*"?(VC:[^"]*)(".*)?/, arr ); print arr[1]; fflush();}' |
-	/Users/vcutten/workrepos/awkbackup/log-parse.awk | 
+	/Users/vcutten/workrepos/awkbackup/log-parse.awk |
 	/Users/vcutten/workrepos/awkbackup/log-color.awk -v "red=$(tput setaf 1)" -v "reset=$(tput sgr0)" -v "green=$(tput setaf 2)" -v "yellow=$(tput setaf 3)" -v "cyan=$(tput setaf 6)"
 }
 
@@ -1355,6 +1473,9 @@ startup-parse()
 hl()
 {
 	#ack --passthru $@
-	grep -E '^|'$@
+	grep -E --color -i '^|'$@
 }
+
+source ~/GDrive/pirate-setup/rally/scripts.sh
+source ~/GDrive/pirate-setup/rc/fzf
 # source ~/.pirate-setup/itermbkg

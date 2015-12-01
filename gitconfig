@@ -1,21 +1,23 @@
 [user]
 	name = GodFather
-	email = vcutten@zynga.com
+	email = vito.blog@gmail.com
 [core]
 	autocrlf = input
 	ignorecase = true
 	editor = /usr/local/bin/vim
 [alias]
-	##################################### Rebase Commands #####################################
+	################################### Rebase Commands ###################################
 	rc = rebase --continue
 	rs = rebase --skip
 	ra = rebase --abort
-	##################################### Status Commands #####################################
+	################################### Status Commands ###################################
 	mc = !git status -s | grep '^UU' | awk '{print $2}'
-	st = !git status -sb 
+	st = !git status -sb
 	ur = !git status -s | grep '^UU' | awk '{print $2}'
 	mod = !git status -s | grep '^ M' | awk '{print $2}'
-	######################################## Shortcuts ########################################
+	###################################### Shortcuts ######################################
+    root = rev-parse --show-toplevel
+    pump = !git-pump-current
 	sup = submodule update
 	ci = commit -a
 	cp = cherry-pick
@@ -45,6 +47,8 @@
 [mergetool]
 	keepBackup = false
 	prompt = false
+[mergetool "vimdiff"]
+  cmd = nvim -d $BASE $LOCAL $REMOTE $MERGED -c '$wincmd w' -c 'wincmd J'
 [push]
 	default = tracking
 [diff]
@@ -61,3 +65,5 @@
 	autosetuprebase = always
 [pull]
 	rebase = true
+[init]
+	templatedir = ~/.git_template

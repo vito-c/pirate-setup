@@ -23,3 +23,14 @@ set completion-ignore-case On
 #"\e[5~": beginning-of-history
 #"\e[6~": end-of-history
 #"\e[2~": quoted-insert
+#
+# Bindings
+set bind-tty-special-chars off
+# \C-Space:complete
+# \C-i:menu-complete
+# "\C-f": forward-word
+# "\C-b": backward-word
+# "\u26F5": unix-word-rubout
+# "\C-w": backward-kill-word
+# "\e[B": history-search-forward
+# "\e[A": history-search-backward
