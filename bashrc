@@ -2,8 +2,6 @@
 #--------------------------------------------------------------------------------
 # Information {
 #--------------------------------------------------------------------------------
-# vim: set sw=4 ts=4 sts=4 et tw=100 foldmarker={,} foldmethod=marker :
-#
 # By: Vito C.
 # }
 #--------------------------------------------------------------------------------
@@ -18,8 +16,17 @@ if hash brew 2>/dev/null; then
     #     . $(brew --prefix)/etc/bash_completion
     # fi
 fi
+if hash aws 2>/dev/null; then
+    complete -C aws_completer aws
+fi
+if [[ -f ./secrets ]]; then
+	source ./secrets
+fi
 if [[ -f ~/.pirate-setup/secrets ]]; then
 	source ~/.pirate-setup/secrets
+fi
+if [[ -f ~/GDrive/pirate-setup/secrets ]]; then
+	source ~/GDrive/pirate-setup/secrets
 fi
 if [ -f ~/GDrive/pirate-setup/bash/facebook ]; then
 	source ~/GDrive/pirate-setup/bash/facebook
@@ -38,7 +45,7 @@ fi
 export LC_CTYPE=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 export ANT_OPTS="-Xmx1024m -Xms512m -XX:MaxPermSize=512m"
-export JAVA_OPTS="-Xmx2024m -Xms1024m -XX:MaxPermSize=512m"
+export JAVA_OPTS="-Xmx2024m -Xms1024m"
 
 # Bindings
 # bind 'set bind-tty-special-chars off'
@@ -65,15 +72,16 @@ shopt -s globstar
 shopt -s lithist cmdhist
 
 # Use Vim for editor
-export HOMEBREW_EDITOR=vim
-export EDITOR=vim
+export HOMEBREW_EDITOR=nvim
+export EDITOR=nvim
 #export HISTSIZE=3600
 #export PROMPT_COMMAND='history -a; history -r'
 #PROMPT_COMMAND="history -a"
 export HISTFILESIZE=400000000
 #HISTCONTROL=ignoredups:erasedups:ignoreboth
 export HISTCONTROL=ignoreboth:erasedups
-export HISTSIZE=100000
+export HISTSIZE=500000
+export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
 #PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
 export HISTIGNORE="ls:ll:fg:eb:ev:fc:pwd:exit:history:cb"
 #export HISTSIZE PROMPT_COMMAND HISTCONTROL
@@ -94,7 +102,7 @@ export HISTIGNORE="ls:ll:fg:eb:ev:fc:pwd:exit:history:cb"
 # Configs
 export HOSTNAME=$(hostname)
 export P4CONFIG=/Users/vcutten/.p4env #$HOME
-#export HOMEBREW_GITHUB_API_TOKEN="9a68042998770190facf2aedeab4a1794ac9a36f"
+export HOMEBREW_GITHUB_API_TOKEN="f72a76c09a7df7bd6c75034f9338b7a97f35076a"
 # }
 #--------------------------------------------------------------------------------
 
@@ -127,6 +135,7 @@ git-pump-current()
     git stash pop
 }
 
+export NVIM_TUI_ENABLE_TRUE_COLOR=1
 
 #############################################################################################################################
 #                                                                                                                           #
@@ -506,29 +515,6 @@ ssb(){ echo -e "\033];brobot\007"; ssh farm2-brobot-01.zc2.zynga.com $@; }
 ssvt(){ ssh vcutten@vito-tower.local $@; }
 ssdt(){ ssh redhand@destro-tower.local $@; }
 ssmb(){ ssh vcutten@vito-mbp.local $@; }
-
-export MINI01="mbx-farm201-zgn04689b";
-export MINI02="mbx-farm202-zgn23872";
-export MINI03="mbx-farm203-ga13051";
-export MINI04="mbx-farm204-zyn04450b";
-export MINI05="mbx-farm205-ca14769";
-export MINI06="mbx-farm206-ca14774";
-export MINI07="mbx-farm207-ca14757";
-export MINI08="mbx-farm208-ca14766";
-export MINI09="mbx-farm209-ca14735";
-
-mini01(){ ssh z_farmville2_build@$MINI01 $@; }
-mini02(){ ssh z_farmville2_build@$MINI02 $@; }
-mini03(){ ssh z_farmville2_build@$MINI03 $@; }
-mini04(){ ssh z_farmville2_build@$MINI04 $@; }
-mini05(){ ssh z_farmville2_build@$MINI05 $@; }
-mini06(){ ssh z_farmville2_build@$MINI06 $@; }
-mini07(){ ssh z_farmville2_build@$MINI07 $@; }
-mini08(){ ssh z_farmville2_build@$MINI08 $@; }
-mini09(){ ssh z_farmville2_build@$MINI09 $@; }
-
-ssfstage() { echo -e "\033];fstage\007"; ssh ${VILLE}-staging-zcon-01.zc2.zynga.com $@; }
-#farm2-staging-web-fb-22
 
 openFlex()
 {
@@ -1476,6 +1462,104 @@ hl()
 	grep -E --color -i '^|'$@
 }
 
+parse_yaml()
+{
+   local prefix=$2
+   local s='[[:space:]]*' w='[a-zA-Z0-9_]*' fs=$(echo @|tr @ '\034')
+   sed -ne "s|^\($s\):|\1|" \
+        -e "s|^\($s\)\($w\)$s:$s[\"']\(.*\)[\"']$s\$|\1$fs\2$fs\3|p" \
+        -e "s|^\($s\)\($w\)$s:$s\(.*\)$s\$|\1$fs\2$fs\3|p"  $1 |
+   awk -F$fs '{
+      indent = length($1)/2;
+      vname[indent] = $2;
+      for (i in vname) {if (i > indent) {delete vname[i]}}
+      if (length($3) > 0) {
+         vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
+         printf("%s%s%s=\"%s\"\n", "'$prefix'",vn, $2, $3);
+      }
+   }'
+}
+
 source ~/GDrive/pirate-setup/rally/scripts.sh
 source ~/GDrive/pirate-setup/rc/fzf
 # source ~/.pirate-setup/itermbkg
+
+port-validate() 
+{
+    # for file in /code/mesos-apps/**/*.json; do 
+    #     env=$(echo $file | gsed -E 's,./([^/]*)/([^\.]*)\.json,\1,g'); 
+    #     app=$(echo $file | gsed -E 's,./([^/]*)/([^\.]*)\.json,\2,g');
+    #     port=""; port=$(jq '.. | .servicePort? //empty' $file); 
+    #     if [[ $port != "" ]]; then 
+    #         echo "env: ${env}, app: ${app}, port: ${port}"; 
+    #     fi; 
+    # done
+    
+    jq --slurpfile ports /code/mesos-apps/ports.json '{ "ports": $ports[0] }' \
+        /code/chef/environments/mesos-apps-dev.json
+}
+
+port-update()
+{
+    # port = $1  env = $2 dev-yolo  app = $3 rewards/calvinballweb
+    mesosfile = /code/mesos-apps/${2}/${3}.json
+    chefapp = ${3##*/}
+    cheffile = /code/chef/environments/mesos-apps-dev.json
+    jq --argjson port ${1} --arg env ${2} --arg app ${chefapp} \
+        '.default_attributes.loadbalancer.sites["mesos_apps.werally.in"].apps[($app+"-"+$env)].port |= $port' \
+        ${cheffile} > ${cheffile}.tmp && mv ${cheffile}.tmp ${cheffile}
+    jq --argjson port ${1} '.container.docker.portMappings[0].servicePort |= $port' \
+        ${mesosfile} > ${mesosfile}.tmp && mv ${mesosfile}.tmp ${mesosfile}
+}
+
+RALLY_CI_TOKEN='aea81b3742fe7e58aa8dcc052ca01d4e'
+RALLY_CI_USER='vito-c'
+RALLY_CI_API='https://rally-jenkins.werally.in/'
+
+HIPCHAT_API='https://api.hipchat.com/v2'
+
+source ~/GDrive/pirate-setup/wintermute/bin/jumpto.sh 
+
+env_parallel() 
+{
+    export -f rally-ip
+    export -f rally-servers
+    export -f rally-healthy
+    export -f rally-mesos-parse
+    export -f rally-mongo
+    export -f rally-status
+    /usr/local/bin/parallel "$@"
+}
+
+dev-yolo-reward-stats()
+{
+    curl -s -w "%{http_code}\n" -X GET https://rewards-dev-yolo.werally.in$(jq -r '.healthChecks[].path' /code/mesos-apps/dev-yolo/rewards/rewardweb.json) -o /dev/null
+}
+dev-yolo-servers()
+{
+    aws ec2 describe-instances --filter "Name=tag-value,Values=dev-yolo" |
+    jq '[.Reservations[].Instances[]|
+        {"name":.Tags|map(select(.Key=="aws:autoscaling:groupName"))[].Value,
+        "ip":.PrivateIpAddress, 
+        "status":.State.Name, "id":.InstanceId}]'
+}
+rcu-servers() 
+{
+    curl -X POST -sS -H "Content-Type: text/plain" --data '!servers '"$1" $HIPCHAT_API/user/cloudops@rallyhealth.com/message?auth_token=$HIPCHAT_TOKEN
+    sleep 6
+    curl -sS $HIPCHAT_API/user/cloudops@rallyhealth.com/history/latest?auth_token=$HIPCHAT_TOKEN | 
+        jq '[.items[] | .message][-1] | split("\n") | [.[] | split("\t") ] | map( { "host": .[0], "status": .[1], "mesos-id": .[2], "ip": .[3] } )'
+}
+
+backup()
+{
+    if [[ ! -f ${1}.bak ]]; then
+        mv ${1} ${1}.bak
+    fi
+}
+restore()
+{
+    mv ${1}.bak ${1}.bak.tmp
+    mv ${1} ${1}.bak
+    mv ${1}.bak.tmp ${1}
+}

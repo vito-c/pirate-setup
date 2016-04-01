@@ -4,12 +4,14 @@
 [core]
 	autocrlf = input
 	ignorecase = true
-	editor = /usr/local/bin/vim
+	editor = /usr/local/bin/nvim
+	excludesfile = /Users/vitocutten/.gitignore_global
 [alias]
 	################################### Rebase Commands ###################################
 	rc = rebase --continue
 	rs = rebase --skip
 	ra = rebase --abort
+    pf = push --force-with-lease
 	################################### Status Commands ###################################
 	mc = !git status -s | grep '^UU' | awk '{print $2}'
 	st = !git status -sb
@@ -34,7 +36,8 @@
 	d = !git --no-pager diff
 	dw = !git --no-pager diff --word-diff
 	l = !git log --oneline --decorate
-	log = !git --no-pager log
+    ll = !git log --name-only
+    log = !git --no-pager log
 	#git d experimental-loc:Client/Game/rules.mk exp-loc:Client/Game/rules.mk
 	#rev = !git show --pretty="format:" --name-only
 	restore = !git checkout $(git rev-list -n 1 HEAD -- "$1")^ -- "$1"
@@ -67,3 +70,5 @@
 	rebase = true
 [init]
 	templatedir = ~/.git_template
+[fetch]
+	recurseSubmodules = true
