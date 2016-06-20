@@ -1356,6 +1356,11 @@ gdp4_completer()
 complete -F gdp4_completer gdp4
 complete -F gdp4_completer gcp4
 
+gdiff() 
+{
+    git diff --no-index ${1} ${2}
+}
+
 lget_gp4_diffs()
 {
 	list=(`git diff --name-only p4/master`)
@@ -1518,7 +1523,9 @@ RALLY_CI_API='https://rally-jenkins.werally.in/'
 
 HIPCHAT_API='https://api.hipchat.com/v2'
 
-source ~/GDrive/pirate-setup/wintermute/bin/jumpto.sh 
+if [[ -f ~/GDrive/pirate-setup/wintermute/bin/jumpto ]]; then
+    source ~/GDrive/pirate-setup/wintermute/bin/jumpto 
+fi
 
 env_parallel() 
 {
@@ -1563,3 +1570,8 @@ restore()
     mv ${1} ${1}.bak
     mv ${1}.bak.tmp ${1}
 }
+ytoj()
+{
+    python -c 'import sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4)' < $1 > $2
+}
+
