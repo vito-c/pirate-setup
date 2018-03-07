@@ -20,8 +20,11 @@
 	###################################### Shortcuts ######################################
     root = rev-parse --show-toplevel
     pump = !git-pump-current
+    pum = !git-pum
 	sup = submodule update
 	ci = commit -a
+    ca = commit -a --amend
+    fix = !git commit -a --amend -m $(git log -1 --pretty=%B) && git pf
 	cp = cherry-pick
 	co = checkout
 	todo = grep --heading --break --ignore-case -e ' FIX: *' -e ' TODO: *'
@@ -35,6 +38,7 @@
 	dt = difftool
 	d = !git --no-pager diff
 	dw = !git --no-pager diff --word-diff
+	dl = !git --no-pager diff --name-only
 	l = !git log --oneline --decorate
     ll = !git log --name-only
     log = !git --no-pager log
@@ -43,6 +47,8 @@
 	restore = !git checkout $(git rev-list -n 1 HEAD -- "$1")^ -- "$1"
 	lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
 	art = !git co -- $(git st | grep -Ev '^##' | grep -E '^ M' | awk '{ print $2 }' | xargs )
+    which = !git rev-parse --abbrev-ref HEAD
+    put = !git push --set-upstream origin $(git rev-parse --abbrev-ref HEAD)
 [color]
 	ui = true
 [merge]

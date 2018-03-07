@@ -7,6 +7,7 @@
 #--------------------------------------------------------------------------------
 # Environment {
 #--------------------------------------------------------------------------------
+# currently borken completions
 # Source Files:
 if hash brew 2>/dev/null; then
     if [[ -f $(brew --prefix)/share/bash-completion/bash_completion ]]; then
@@ -16,9 +17,14 @@ if hash brew 2>/dev/null; then
     #     . $(brew --prefix)/etc/bash_completion
     # fi
 fi
-if hash aws 2>/dev/null; then
-    complete -C aws_completer aws
-fi
+export ASYNC_PROFILER_DIR=$HOME/code/playground/async-profiler  
+export FLAME_GRAPH_DIR=$HOME/code/playground/FlameGraph  
+
+# # causing shell to exit
+# # source "$(git --exec-path)/git-sh-setup"
+# if hash aws 2>/dev/null; then
+#     complete -C aws_completer aws
+# fi
 if [[ -f ./secrets ]]; then
 	source ./secrets
 fi
@@ -77,10 +83,10 @@ export EDITOR=nvim
 #export HISTSIZE=3600
 #export PROMPT_COMMAND='history -a; history -r'
 #PROMPT_COMMAND="history -a"
-export HISTFILESIZE=400000000
+export HISTFILESIZE=4000000000
 #HISTCONTROL=ignoredups:erasedups:ignoreboth
 export HISTCONTROL=ignoreboth:erasedups
-export HISTSIZE=500000
+export HISTSIZE=50000000
 export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
 #PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
 export HISTIGNORE="ls:ll:fg:eb:ev:fc:pwd:exit:history:cb"
@@ -102,7 +108,6 @@ export HISTIGNORE="ls:ll:fg:eb:ev:fc:pwd:exit:history:cb"
 # Configs
 export HOSTNAME=$(hostname)
 export P4CONFIG=/Users/vcutten/.p4env #$HOME
-export HOMEBREW_GITHUB_API_TOKEN="f72a76c09a7df7bd6c75034f9338b7a97f35076a"
 # }
 #--------------------------------------------------------------------------------
 
@@ -131,6 +136,19 @@ git-pump-current()
     git checkout master
     git pull upstream master
     git checkout ${cb}
+    git pull upstream master
+    git stash pop
+}
+
+rot13()
+{
+    tr '[A-Za-z]' '[N-ZA-Mn-za-m]'
+}
+
+git-pum()
+{
+    # cb=$(git rev-parse --abbrev-ref HEAD)
+    git stash
     git pull upstream master
     git stash pop
 }
@@ -347,8 +365,10 @@ fi
 
 export FCSH=$FLEX_HOME/bin/fcsh
 export PLAN9=/usr/local/plan9
-PATH="/usr/local/bin:/System/Library/Frameworks/Python.framework/Versions/2.7/bin/:$PATH:/Users/vcutten/Library/Python/2.7/bin:~/.pirate-setup/bin:/usr/texbin:/code/RoboCopUnicorn/scripts/path:/usr/local/opt/go/libexec/bin"
-export GOPATH="/Users/vitocutten/playground/go/libs"
+export GOPATH="$HOME/code/go"
+PATH="/usr/local/sbin:/usr/local/bin:/System/Library/Frameworks/Python.framework/Versions/2.7/bin/:$PATH:/Users/vcutten/Library/Python/2.7/bin:~/.pirate-setup/bin:/usr/texbin:/code/RoboCopUnicorn/scripts/path:/usr/local/opt/go/libexec/bin"
+PATH="$PATH:$GOPATH/bin"
+
 #export PS1="\[\e[36;1m\][\A] \[\e[0;35m\]$HOSTSTUB \[\e[31;1m\]\w> \[\e[0m\]"
 #export PS2="\[\e[31;1m\]> \[\e[0m\]"
 #export PS1="\[\e[36;1m\][\[\e[0;35m\]$HOSTSTUB\[\e[36;1m\]] \[\e[0;35m\]$HOSTSTUB \[\e[31;1m\]\w> \[\e[0m\]"
@@ -715,7 +735,7 @@ copy-job()
 
 	#Creating a new job via posting a local configuration file
 	curl -X POST "$destination/createItem?name=$new_job_name" --data-binary "@tempconfig.xml" -H "Content-Type: text/xml"
-	
+
 	rm tempconfig.xml
 }
 
@@ -988,8 +1008,8 @@ v2d2-addjoke()
     git --work-tree=${v2d2dir} --git-dir=${v2d2dir}/.git diff -- ${v2d2ans} ${v2d2cls}
 }
 
-export DEV=$HOME/workrepos/farm3/branches/dev/src;
-export dev=$DEV;
+# export DEV=$HOME/workrepos/farm3/branches/dev/src;
+# export dev=$DEV;
 diff-dev()
 {
 	diff <(find ../dev -name $1 -exec md5 {} + | gsed 's|./dev||g') <(find . -name $1 -exec md5 {} +)
@@ -1572,6 +1592,37 @@ restore()
 }
 ytoj()
 {
-    python -c 'import sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4)' < $1 > $2
+    if [[ -n "$2" ]]; then
+        python -c 'import sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4)' < $1 > $2
+    elif [[ -n "$1" ]]; then
+        python -c 'import sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4)' < $1
+    else
+        python -c 'import sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4)'
+    fi
+}
+jtoy()
+{
+    if [[ -n "$2" ]]; then
+        python -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)' < $1 > $2
+    elif [[ -n "$1" ]]; then
+        python -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)' < $1
+    else
+        python -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)'
+    fi
 }
 
+clip()
+{
+    [ -t 0 ] && pbpaste || pbcopy
+}
+jmap()
+{
+    filter=$1
+    some_func=$2
+    json_file=$3
+    jfilter=$(jq -c "${filter}" ${json_file})
+    for ((j=0; j< $(echo $jfilter | jq 'length'); ++j )); do
+        item=$(echo $jfilter | jq -c '.['$j']');
+        echo ${item} | ${some_func}
+    done;
+}
