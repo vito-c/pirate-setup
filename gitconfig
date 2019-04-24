@@ -4,7 +4,6 @@
 [core]
 	autocrlf = input
 	ignorecase = true
-	editor = /usr/local/bin/nvim
 	excludesfile = /Users/vitocutten/.gitignore_global
 [alias]
 	################################### Rebase Commands ###################################
@@ -19,8 +18,7 @@
 	mod = !git status -s | grep '^ M' | awk '{print $2}'
 	###################################### Shortcuts ######################################
     root = rev-parse --show-toplevel
-    pump = !git-pump-current
-    pum = !git-pum
+    pump = !git pull upstream master
 	sup = submodule update
 	ci = commit -a
     ca = commit -a --amend
@@ -31,6 +29,7 @@
 	in = !/Users/vcutten/workrepos/farmville-main/util/git/incoming.sh
 	out = !git show --name-only origin/$1..$1
 	lol = log --graph --decorate --pretty=oneline --abbrev-commit
+    tix = !git-tix --nojira
 	#out = !git show --name-only origin/$1..$1
 	#out = !git rev-parse origin/$1..$1
 	#out = !/Users/vcutten/workrepos/farmville2-main/util/git/outgoing.sh
@@ -49,6 +48,7 @@
 	art = !git co -- $(git st | grep -Ev '^##' | grep -E '^ M' | awk '{ print $2 }' | xargs )
     which = !git rev-parse --abbrev-ref HEAD
     put = !git push --set-upstream origin $(git rev-parse --abbrev-ref HEAD)
+    rad = !git remote get-url --all origin | gsed -r 's,:[^/]*/,:foo/,g'
 [color]
 	ui = true
 [merge]
@@ -78,3 +78,8 @@
 	templatedir = ~/.git_template
 [fetch]
 	recurseSubmodules = true
+# [url "ssh://git@github.com/AudaxHealthInc/"]
+#     insteadOf = https://github.com/AudaxHealthInc/
+#
+[url "ssh://git@github.com/AudaxHealthInc/"]
+	insteadOf = https://github.com/AudaxHealthInc/
