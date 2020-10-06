@@ -1,17 +1,34 @@
-#!/usr/local/bin/bash
+#!/usr/local/bin/bash -x
 #--------------------------------------------------------------------------------
-# Information {
-#--------------------------------------------------------------------------------
-# By: Vito C.
-# }
+# Information { #-------------------------------------------------------------------------------- By: Vito C.  }
 #--------------------------------------------------------------------------------
 # Environment {
 #--------------------------------------------------------------------------------
 # currently borken completions
 # Source Files:
+shopt -s direxpand
+export PATH="/usr/local/sbin:/usr/local/bin:$PATH:~/Library/Python/2.7/bin:$HOME/code/configs/pirate-setup/bin:/usr/texbin:/usr/local/opt/go/libexec/bin"
+# export PATH="/usr/local/opt/scala@2.11/bin:/usr/local/octave/3.8.0/bin:$PATH"
+export GOPATH="$HOME/code/go"
+PATH="$PATH:$GOPATH/bin"
+PATH="$PATH:$HOME/.cargo/bin"
+PATH="$PATH:$HOME/code/personal/KotlinLanguageServer/server/build/install/server/bin"
+
+strip_color()
+{
+  gsed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g"
+}
+
 if hash brew 2>/dev/null; then
+    for completion_file in $(brew --prefix)/etc/bash_completion.d/*; do
+        source "$completion_file"
+    done
     if [[ -f $(brew --prefix)/share/bash-completion/bash_completion ]]; then
         source $(brew --prefix)/share/bash-completion/bash_completion;
+        for completion_file in $(brew --prefix)/share/bash-completion/completions/*; do
+            source "$completion_file"
+        done
+
 	fi
     # if [[ -f $(brew --prefix)/etc/bash_completion ]]; then
     #     . $(brew --prefix)/etc/bash_completion
@@ -25,20 +42,22 @@ export FLAME_GRAPH_DIR=$HOME/code/playground/FlameGraph
 # if hash aws 2>/dev/null; then
 #     complete -C aws_completer aws
 # fi
+
+export CODE_CONFIGS=$HOME/code/configs
 if [[ -f ./secrets ]]; then
 	source ./secrets
 fi
 if [[ -f ~/.pirate-setup/secrets ]]; then
 	source ~/.pirate-setup/secrets
 fi
-if [[ -f ~/GDrive/pirate-setup/secrets ]]; then
-	source ~/GDrive/pirate-setup/secrets
+if [[ -f $CODE_CONFIGS/pirate-setup/secrets ]]; then
+	source $CODE_CONFIGS/pirate-setup/secrets
 fi
-if [ -f ~/GDrive/pirate-setup/bash/facebook ]; then
-	source ~/GDrive/pirate-setup/bash/facebook
+if [ -f $CODE_CONFIGS/pirate-setup/bash/facebook ]; then
+	source $CODE_CONFIGS/pirate-setup/bash/facebook
 fi
-if [ -f ~/GDrive/pirate-setup/bash/zynga ]; then
-	source ~/GDrive/pirate-setup/bash/zynga
+if [ -f $CODE_CONFIGS/pirate-setup/bash/zynga ]; then
+	source $CODE_CONFIGS/pirate-setup/bash/zynga
 fi
 
 if [[ -f /Users/vcutten/Library/Python/2.7/lib/python/site-packages/powerline/bindings/bash/powerline.sh ]]; then
@@ -69,7 +88,7 @@ export ANDROID_HOME=/usr/local/opt/android-sdk
 export ANDROID_NDK=/usr/local/opt/android-ndk
 
 # Shopts
-shopt -s histappend
+# shopt -s histappend
 shopt -s extglob
 shopt -s cdspell
 shopt -s nocaseglob
@@ -80,19 +99,24 @@ shopt -s lithist cmdhist
 # Use Vim for editor
 export HOMEBREW_EDITOR=nvim
 export EDITOR=nvim
-#export HISTSIZE=3600
-#export PROMPT_COMMAND='history -a; history -r'
-#PROMPT_COMMAND="history -a"
-export HISTFILESIZE=4000000000
-#HISTCONTROL=ignoredups:erasedups:ignoreboth
-export HISTCONTROL=ignoreboth:erasedups
-export HISTSIZE=50000000
-export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
-#PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
-export HISTIGNORE="ls:ll:fg:eb:ev:fc:pwd:exit:history:cb"
-#export HISTSIZE PROMPT_COMMAND HISTCONTROL
 
-#export SCALA_HOME=/Users/vcutten/workrepos/apparat/scala-2.8.2.final
+# External bash history.
+# ---------------------
+# https://unix.stackexchange.com/questions/18212/bash-history-ignoredups-and-erasedups-setting-conflict-with-common-history
+# Undocumented feature which sets the size to "unlimited".
+# http://stackoverflow.com/questions/9457233/unlimited-bash-history
+export HISTFILESIZE=
+export HISTSIZE=
+export HISTTIMEFORMAT="[%F %T] "
+# Change the file location because certain bash sessions truncate .bash_history file upon close.
+# http://superuser.com/questions/575479/bash-history-truncated-to-500-lines-on-each-login
+export HISTFILE=~/.bash_external_history
+# Force prompt to write history after every command.
+# http://superuser.com/questions/20900/bash-history-loss
+# PROMPT_COMMAND="history -a; $PROMPT_COMMAND"
+export HISTIGNORE="ls:ll:fg:eb:ev:fc:pwd:exit:history:cb:git st"
+# PROMPT_COMMAND="history -a; history -n"
+# PROMPT_COMMAND="history -n; history -w; history -c; history -r; $PROMPT_COMMAND"
 
 #Enable Colors
 #export CLICOLOR=1
@@ -129,16 +153,16 @@ export P4CONFIG=/Users/vcutten/.p4env #$HOME
 ###
 # GIT BS!
 ##
-git-pump-current()
-{
-    cb=$(git rev-parse --abbrev-ref HEAD)
-    git stash
-    git checkout master
-    git pull upstream master
-    git checkout ${cb}
-    git pull upstream master
-    git stash pop
-}
+# git-pump-current()
+# {
+#     cb=$(git rev-parse --abbrev-ref HEAD)
+#     git stash
+#     git checkout master
+#     git pull upstream master
+#     git checkout ${cb}
+#     git pull upstream master
+#     git stash pop
+# }
 
 rot13()
 {
@@ -175,14 +199,18 @@ s3prod()
 
 lockme()
 {
-    open /System/Library/Frameworks/ScreenSaver.framework/Versions/A/Resources/ScreenSaverEngine.app
+    open /System/Library/CoreServices/ScreenSaverEngine.app
 }
 
 #export NVIM_LISTEN_ADDRESS=8000
 
 nv()
 {
-    command /usr/local/bin/nvim "${@}"
+    if [[ -z $VIMRUNTIME ]]; then 
+        command /usr/local/bin/nvim "${@}"
+    else
+        command /usr/local/bin/nvr "${@}"
+     fi
 }
 
 vi() {
@@ -216,6 +244,8 @@ s3rally()
 {
     command /usr/local/bin/s3cmd -c ~/.s3confs/s3rally-dev.cfg "$@"
 }
+
+
 #TODO: export your java home too brah
 if [[ $(uname) =~ Darwin || $(uname) =~ FeeBSD ]]; then
 	# export FLEX_HOME="/usr/local/bin/flexsdks/4.6.0.23201B"
@@ -237,7 +267,6 @@ if [[ $(uname) =~ Darwin || $(uname) =~ FeeBSD ]]; then
 
 	search-history(){
 		history | grep -v history | gawk '{ $1=""; print $0 }' | sort | uniq | grep $1
-
 	}
 
 	disable-spotlight(){
@@ -270,16 +299,17 @@ if [[ $(uname) =~ Darwin || $(uname) =~ FeeBSD ]]; then
 
 	eb()
 	{
-		echo -e "\033];BASHRC\007";
+		# echo -e "\033];BASHRC\007";
 		#trap 'echo -e "\033];bash\007"' SIGTERM SIGKILL SIGQUIT
 		#trap 'echo -e "\033];bash\007";' EXIT
-		command /usr/local/bin/nvim $@ ~/GDrive/pirate-setup/bashrc;
+		# command /usr/local/bin/nvim $@ $CODE_CONFIGS/pirate-setup/bashrc;
+        nv $CODE_CONFIGS/pirate-setup/bashrc;
 	}
-	vg() { vim $@ ~/.pirate-setup/gitconfig; }
-	ev() { nvim $@ ~/.nvim/rc/vimrc; }
+	eg() { nv $CODE_CONFIGS/pirate-setup/gitconfig; }
+	ev() { nv $CODE_CONFIGS/pirate-vim/rc/vimrc; }
 	cb() { source ~/.bash_profile; }
 	ls() { command ls -G "$@"; }
-	fn() { command find . -iname "$@"; }
+	# fn() { command find . -iname "$@"; }
 	ehco() { command echo "$@"; }
 	gti() { command git "$@"; }
 	cmhod() { command chmod "$@"; }
@@ -365,14 +395,12 @@ fi
 
 export FCSH=$FLEX_HOME/bin/fcsh
 export PLAN9=/usr/local/plan9
-export GOPATH="$HOME/code/go"
-PATH="/usr/local/sbin:/usr/local/bin:/System/Library/Frameworks/Python.framework/Versions/2.7/bin/:$PATH:/Users/vcutten/Library/Python/2.7/bin:~/.pirate-setup/bin:/usr/texbin:/code/RoboCopUnicorn/scripts/path:/usr/local/opt/go/libexec/bin"
-PATH="$PATH:$GOPATH/bin"
 
-#export PS1="\[\e[36;1m\][\A] \[\e[0;35m\]$HOSTSTUB \[\e[31;1m\]\w> \[\e[0m\]"
-#export PS2="\[\e[31;1m\]> \[\e[0m\]"
-#export PS1="\[\e[36;1m\][\[\e[0;35m\]$HOSTSTUB\[\e[36;1m\]] \[\e[0;35m\]$HOSTSTUB \[\e[31;1m\]\w> \[\e[0m\]"
-#export PS2="\[\e[31;1m\]> \[\e[0m\]"
+export PS1="\[\e[36;1m\][\A] \[\e[31;1m\]\w> \[\e[0m\]"
+export PS2="\[\e[31;1m\]> \[\e[0m\]"
+# export PS1="\[\e[36;1m\][\[\e[0;35m\]$HOSTSTUB\[\e[36;1m\]] \[\e[0;35m\]$HOSTSTUB \[\e[31;1m\]\w> \[\e[0m\]"
+# export PS2="\[\e[31;1m\]> \[\e[0m\]"
+# export PS1='\W> '
 
 #echo -e "\033];$HOSTSTUB\007";
 if [ -f /usr/local/git/contrib/completion/git-completion.bash ]; then
@@ -398,18 +426,18 @@ count-lines()
 	find $dir -type f -name $name -exec bash -c 'echo $(cat $1 | wc -l) $1' _ {} \;
 }
 
-fd()
-{
-	case "$1" in
-		'r'|'repo'|'root')
-			startdir=$PWD;
-			while [[ $PWD != $HOME && $(ls -a | grep '^.git$') != '.git' && $PWD != / ]]; do cd ..; done;
-			enddir=$PWD;
-			cd $startdir;
-			cd $enddir;
-		;;
-	esac
-}
+# fd()
+# {
+# 	case "$1" in
+# 		'r'|'repo'|'root')
+# 			startdir=$PWD;
+# 			while [[ $PWD != $HOME && $(ls -a | grep '^.git$') != '.git' && $PWD != / ]]; do cd ..; done;
+# 			enddir=$PWD;
+# 			cd $startdir;
+# 			cd $enddir;
+# 		;;
+# 	esac
+# }
 
 rename()
 {
@@ -1505,8 +1533,8 @@ parse_yaml()
    }'
 }
 
-source ~/GDrive/pirate-setup/rally/scripts.sh
-source ~/GDrive/pirate-setup/rc/fzf
+source $CODE_CONFIGS/pirate-setup/rally/scripts.sh
+source $CODE_CONFIGS/pirate-setup/rc/fzf
 # source ~/.pirate-setup/itermbkg
 
 port-validate() 
@@ -1543,8 +1571,8 @@ RALLY_CI_API='https://rally-jenkins.werally.in/'
 
 HIPCHAT_API='https://api.hipchat.com/v2'
 
-if [[ -f ~/GDrive/pirate-setup/wintermute/bin/jumpto ]]; then
-    source ~/GDrive/pirate-setup/wintermute/bin/jumpto 
+if [[ -f $CODE_CONFIGS/pirate-setup/wintermute/bin/jumpto ]]; then
+    source $CODE_CONFIGS/pirate-setup/wintermute/bin/jumpto 
 fi
 
 env_parallel() 
@@ -1592,22 +1620,28 @@ restore()
 }
 ytoj()
 {
-    if [[ -n "$2" ]]; then
-        python -c 'import sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4)' < $1 > $2
-    elif [[ -n "$1" ]]; then
-        python -c 'import sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4)' < $1
-    else
-        python -c 'import sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4)'
+    for file in "${@}"; do 
+        parse=$(python3 -c 'import sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4)' < "$file" 2> /dev/null)
+        err="$?"
+        if [[ "$err" -gt 0 ]]; then
+            python3 -c 'import datetime, sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4, default= lambda o: o.__str__() if isinstance(o, datetime.datetime) else None)' < "$file"
+        else
+            echo "${parse}"
+        fi
+    done
+    # only works for one file in the stream so 
+    if [[ -z "$1" ]]; then
+        python3 -c 'import datetime, sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4, default= lambda o: o.__str__() if isinstance(o, datetime.datetime) else None)'
     fi
 }
 jtoy()
 {
     if [[ -n "$2" ]]; then
-        python -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)' < $1 > $2
+        python3 -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)' < $1 > $2
     elif [[ -n "$1" ]]; then
-        python -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)' < $1
+        python3 -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)' < $1
     else
-        python -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)'
+        python3 -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)'
     fi
 }
 
@@ -1617,12 +1651,97 @@ clip()
 }
 jmap()
 {
-    filter=$1
-    some_func=$2
-    json_file=$3
+    filter="$1"
+    some_func="$2"
+    json_file="$3"
+    echo $filter
     jfilter=$(jq -c "${filter}" ${json_file})
+    echo $jfilter
+    echo $some_func
     for ((j=0; j< $(echo $jfilter | jq 'length'); ++j )); do
         item=$(echo $jfilter | jq -c '.['$j']');
-        echo ${item} | ${some_func}
+        echo $item
+        echo "${item}" | ${some_func}
     done;
 }
+
+rv_services() {
+    ytoj ~/code/rally-versions/prod/*-rally-compose.yaml | jq --slurp 'map(.services|to_entries|map(.key))|add'
+}
+mc_port_map() {
+    python -c 'import datetime, sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4, default= lambda o: o.__str__() if isinstance(o, datetime.datetime) else None)' < ~/.maestro/maestro-compose.yaml | jq  -S '.compositions | map( .data.services ) | add | to_entries | map( {service:  .key, ports: .value.ports[0]}) | reduce .[] as $i ({}; .[$i.service] = $i.ports )'
+}
+
+env_secrets() {
+    mc_dump $1 | jq -S '.env' |
+    jq -S "${secret_filter}"
+    # for ((j=0; j< $(echo $jfilter | jq 'length'); ++j )); do item=$(echo $jfilter | jq -c '.['$j']' | jq -r '.'); echo $item; done
+}
+
+json_columns() {
+    # Non recursive output will only be two columns and the input needs to be in the form of a key value pair
+    # i.e. input { "key1": "value1", "key2": "value2", "key3": "value3" }
+    # output:
+    # key1 value1
+    # key2 value2
+    # key3 value3
+
+    if [[ ${#} -gt 0 ]]; then
+        obj="${@}"
+    else
+        read -r obj
+    fi
+    keys=$(echo "$obj" | jq -c 'to_entries | map(.key)')
+    values=$(echo "$obj" | jq -c 'to_entries | map(.value)')
+
+    # echo kyes $keys
+    # echo values $values
+    for ((j=0; j< $(echo "$keys" | jq 'length'); ++j )); do 
+        key="$(echo $keys | jq -c '.['$j']' | jq -r '.')"; 
+        value="$(echo $values | jq -c '.['$j']' | jq -r '.')"; 
+        printf "%-10s %10s\n" "$key" "$value";
+    done
+}
+
+json_array_columns() {
+    # Non recursive output will only be two columns and the input needs to be in the form of a key value pair
+    # i.e. input { "key1": "value1", "key2": "value2", "key3": "value3" }
+    # output:
+    # key1 value1
+    # key2 value2
+    # key3 value3
+
+    if [[ ${#} -gt 0 ]]; then
+        obj="${@}"
+    else
+        read -r obj
+    fi
+    keys=$(echo "$obj" | jq -c 'to_entries | map(.key)')
+    values=$(echo "$obj" | jq -c 'to_entries | map(.value)')
+    headers=$(echo "$obj" | jq -c 'to_entries | map(.value)|.[0]|map(to_entries|map(.key))|add')
+    map=$(echo "$obj" | jq -c 'to_entries|map({(.key):.value|add})|add')
+    len=$(echo "$keys" | jq 'length')
+    echo $len
+    # echo kyes $keys
+    # echo values $values
+    for ((j=0; j<$len; ++j )); do 
+        key="$(echo $keys | jq -c '.['$j']' | jq -r '.')"; 
+        prod="$(echo $map | jq -c '.["'"$key"'"]["'"prod/sortinghat/web"'"]' | jq -r '.')"; 
+        devc="$(echo $map | jq -c '.["'"$key"'"]["'"dev-core/sortinghat/web"'"]' | jq -r '.')"; 
+        blue="$(echo $map | jq -c '.["'"$key"'"]["'"bluesteel/sortinghat/web"'"]' | jq -r '.')"; 
+        inte="$(echo $map | jq -c '.["'"$key"'"]["'"integration/sortinghat/web"'"]' | jq -r '.')"; 
+        load="$(echo $map | jq -c '.["'"$key"'"]["'"load-test/sortinghat/web"'"]' | jq -r '.')"; 
+        printf "%-10s %10s %10s %10s %10s %10s\n" "$key" "$prod" "$blue" "$inte" "$load" "$devc";
+    done
+}
+
+
+[ -f ~/.fzf.bash ] && source ~/.fzf.bash
+[ -f ~/code/configs/pirate-setup/rally ] && source ~/code/configs/pirate-setup/rally/*
+
+export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
+
+# Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
+export PATH="$PATH:$HOME/.rvm/bin"
+
+source <(kubectl completion bash)
