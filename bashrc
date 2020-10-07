@@ -130,7 +130,11 @@ export HISTIGNORE="ls:ll:fg:eb:ev:fc:pwd:exit:history:cb:git st"
 #export LESS_TERMCAP_us=$'\E[04;38;5;146m' # begin underline
 
 # Configs
-export HOSTNAME=$(hostname)
+if hash hostname 2>/dev/null; then
+    export HOSTNAME=$(hostname)
+else 
+    export HOSTNAME="dorker"
+fi
 export P4CONFIG=/Users/vcutten/.p4env #$HOME
 # }
 #--------------------------------------------------------------------------------
@@ -396,8 +400,16 @@ fi
 export FCSH=$FLEX_HOME/bin/fcsh
 export PLAN9=/usr/local/plan9
 
-export PS1="\[\e[36;1m\][\A] \[\e[31;1m\]\w> \[\e[0m\]"
-export PS2="\[\e[31;1m\]> \[\e[0m\]"
+if [[ $HOSTNAME == "dorker" ]]; then
+    # export PS1="\[\e[36;1m\][\A] \[\e[31;1m\]\w> \[\e[0m\]"
+    # export PS2="\[\e[31;1m\]> \[\e[0m\]"
+    echo "WELCOME TO DOCKER"
+    export OS_ICON=🐳
+    export PS1="\n \[\033[0;34m\]╭─\[\033[0;31m\]\[\033[0;37m\]\[\033[41m\] $OS_ICON \u \[\033[0m\]\[\033[0;31m\]\[\033[44m\]\[\033[0;34m\]\[\033[44m\]\[\033[0;30m\]\[\033[44m\] \w \[\033[0m\]\[\033[0;34m\] \n \[\033[0;34m\]╰ \[\033[1;36m\]\$ \[\033[0m\]"
+else 
+    export PS1="\[\e[36;1m\][\A] \[\e[31;1m\]\w> \[\e[0m\]"
+    export PS2="\[\e[31;1m\]> \[\e[0m\]"
+fi
 # export PS1="\[\e[36;1m\][\[\e[0;35m\]$HOSTSTUB\[\e[36;1m\]] \[\e[0;35m\]$HOSTSTUB \[\e[31;1m\]\w> \[\e[0m\]"
 # export PS2="\[\e[31;1m\]> \[\e[0m\]"
 # export PS1='\W> '
