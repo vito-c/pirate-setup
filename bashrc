@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash -x
+#!/usr/local/bin/bash
 #--------------------------------------------------------------------------------
 # Information { #-------------------------------------------------------------------------------- By: Vito C.  }
 #--------------------------------------------------------------------------------
@@ -400,15 +400,146 @@ fi
 export FCSH=$FLEX_HOME/bin/fcsh
 export PLAN9=/usr/local/plan9
 
+
+function gradient() {
+    local start=$([ -z "${1+x}" ] && echo "255;0;0" || echo $1)
+    local end=$([ -z "${2+x}" ] && echo "0;0;255" || echo $2)
+    local text=$([ -z "${3+x}" ] && echo "\\t" || echo $3)
+    local perc=$([ -z "${4+x}" ] && echo "100" || echo $4)
+    local tcol=$(echo $text | wc -c)
+
+    local sr=$(echo $start | awk -F";" '{print $1}')
+    local sg=$(echo $start | awk -F";" '{print $2}')
+    local sb=$(echo $start | awk -F";" '{print $3}')
+
+    local er=$(echo $end | awk -F";" '{print $1}')
+    local eg=$(echo $end | awk -F";" '{print $2}')
+    local eb=$(echo $end | awk -F";" '{print $3}')
+    gawk -v term_cols="${tcol}" -v txt="${text}" -v p="${perc}" \
+        -v r="${sr}" -v g="${sg}" -v b="${sb}" \
+        -v re="${er}" -v ge="${eg}" -v be="${eb}" \
+    'BEGIN {
+
+    ri = (p == 0)? re : 100*(re - r)/(p*term_cols);
+    gi = (p == 0)? ge : 100*(ge - g)/(p*term_cols);
+    bi = (p == 0)? be : 100*(be - b)/(p*term_cols);
+
+    for (colnum = 1; colnum<term_cols; colnum++) {
+        s = substr(txt, colnum,1);
+        r = (r + ri >= re && ri > 0 || r + ri <= 0 && ri < 0)? re : r + ri;
+        g = (g + gi >= ge && gi > 0 || g + gi <= 0 && gi < 0)? ge : g + gi;
+        b = (b + bi >= be && bi > 0 || b + bi <= 0 && bi < 0)? be : b + bi;
+        printf "\033[48;2;%d;%d;%dm", r,g,b;
+        printf "\033[38;2;%d;%d;%dm", 255-r,255-g,255-b;
+        printf "%s\033[0m", s;
+    }
+    printf "\n";
+}'
+}
+function dump_colors() {
+    awk -v term_cols="${width:-$(tput cols || echo 80)}" 'BEGIN{
+    s="/\\";
+    for (colnum = 0; colnum<term_cols; colnum++) {
+        r = 255-(colnum*255/term_cols);
+        g = (colnum*510/term_cols);
+        b = (colnum*255/term_cols);
+        if (g>255) g = 510-g;
+        printf "\033[48;2;%d;%d;%dm", r,g,b;
+        printf "\033[38;2;%d;%d;%dm", 255-r,255-g,255-b;
+        printf "%s\033[0m", substr(s,colnum%2+1,1);
+    }
+    printf "\n";
+}'
+}
+
+function ps1_start() {
+    # "77;77;77" "77;77;255"
+    [[ -z "${1+x}" ]] && local scbg="77;77;77"  || local scbg="$1"
+    [[ -z "${2+x}" ]] && local ecbg="77;77;255" || local ecbg="$2"
+    [[ -z "${3+x}" ]] && local ncbg="30;50;30"  || local ncbg="$3"
+    [[ -z "${4+x}" ]] && local itxt="$OS_ICON xx" || local itxt="$4"
+    local tcfg="255;0;0"
+
+    local otxt=$(gradient "${scbg}" "${ecbg}" " ${itxt} " "30")
+    # printf "\n\e[38;2;${scbg}m\e[48;2;${scbg}m \e[0m%s\e[48;2;${ecbg}m\e[38;2;${ecbg}m \e[48;2;${ncbg}m\e[0m" "${otxt}"
+    # \n\[\33[47m\]
+    echo -e "\033[38;2;${scbg}m\033[48;2;${scbg}m \033[0m${otxt}\033[48;2;${ecbg}m\033[38;2;${ecbg}m \033[48;2;${ncbg}m\033[0m"
+}
+
+function ps1_jobs() {
+    [[ -z "${1+x}" ]] && local scbg="30;50;30"  || local scbg="$1"
+    [[ -z "${2+x}" ]] && local ecbg="98;206;80" || local ecbg="$2"
+    [[ -z "${3+x}" ]] && local ncbg="255;0;0"   || local ncbg="$3"
+    [[ -z "${4+x}" ]] && local itxt="🏃 x"     || local itxt="$4"
+    local otxt=$(gradient "${scbg}" "${ecbg}" " ${itxt} " "0")
+
+    printf "\e[38;2;${scbg}m\e[48;2;${scbg}m \e[0m%s\e[48;2;${ecbg}m\e[38;2;${ecbg}m \e[48;2;${ncbg}m\e[0m" "${otxt}"
+}
+
+function ps1_mid() {
+    #115,174,233
+    [[ -z "${1+x}" ]] && local scbg="30;50;30"  || local scbg="$1"
+    [[ -z "${2+x}" ]] && local ecbg="98;206;80" || local ecbg="$2"
+    [[ -z "${3+x}" ]] && local ncbg="255;0;0"   || local ncbg="$3"
+    [[ -z "${4+x}" ]] && local itxt=" xx"   || local itxt="$4"
+    local tcfg="255;0;0"
+
+    local otxt=$(gradient "${scbg}" "${ecbg}" " ${itxt} " "30")
+    printf "\e[38;2;${scbg}m\e[48;2;${scbg}m \e[0m%s\e[48;2;${ecbg}m\e[38;2;${ecbg}m \e[48;2;${ncbg}m\e[0m" "${otxt}"
+}
+
+function ps1_beforelast() {
+    #115,174,233
+    [[ -z "${1+x}" ]] && local scbg="30;50;30"  || local scbg="$1"
+    [[ -z "${2+x}" ]] && local ecbg="98;206;80" || local ecbg="$2"
+    [[ -z "${3+x}" ]] && local ncbg="255;0;0"   || local ncbg="$3"
+    [[ -z "${4+x}" ]] && local itxt=" xx"   || local itxt="$4"
+    local tcfg="255;0;0"
+
+    local otxt=$(gradient "${scbg}" "${ecbg}" " ${itxt} " "30")
+    printf "\e[38;2;${scbg}m\e[48;2;${scbg}m \e[0m%s\e[48;2;${ecbg}m\e[38;2;${ecbg}m \e[0m\n" "${otxt}"
+}
+
+function ps1_git() {
+    [[ -z "${1+x}" ]] && local scbg="30;50;30"  || local scbg="$1"
+    [[ -z "${2+x}" ]] && local ecbg="98;206;80" || local ecbg="$2"
+    [[ -z "${3+x}" ]] && local ocbg="255;0;0"   || local ocbg="$3"
+    [[ -z "${4+x}" ]] && local itxt="master"    || local itxt="$4"
+
+    local tcfg="255;0;0"
+    # $( git branch 2>/dev/null | grep '^*' | colrm 1 2)
+
+    if [[ ${itxt} == "" ]]; then
+      printf "\e[0m\e[38;2;${ocbg}m\e[0m"
+    else 
+      local otxt=$(gradient "${scbg}" "${ecbg}" "🔀 ${itxt} " "50")
+      printf "\e[38;2;${ocbg}m\e[48;2;${scbg}m\e[38;2;${scbg}m \e[0m%s\e[48;2;${ecbg}m\e[38;2;${ecbg}m \e[0m\e[38;2;${ecbg}m\e[0m\n" "${otxt}"
+    fi
+}
+
+
+# function ps1-end() {
+#     local sbkg=$([ -z "${1+x}" ] && echo "\e[47m" || echo $1)
+#     local fgrd=$([ -z "${2+x}" ] && echo "\e[0;30m" || echo $2)
+#     local nbkg=$([ -z "${3+x}" ] && echo "\e[44m" || echo $3)
+#     local farr="\e[0;37m"
+#     echo -e "${farr}${fgrd}${sbkg} $OS_ICON \A ${farr}${nbkg}\e[0m"
+# }
+#
 if [[ $HOSTNAME == "dorker" ]]; then
     # export PS1="\[\e[36;1m\][\A] \[\e[31;1m\]\w> \[\e[0m\]"
     # export PS2="\[\e[31;1m\]> \[\e[0m\]"
     echo "WELCOME TO DOCKER"
     export OS_ICON=🐳
-    export PS1="\n \[\033[0;34m\]╭─\[\033[0;31m\]\[\033[0;37m\]\[\033[41m\] $OS_ICON \u \[\033[0m\]\[\033[0;31m\]\[\033[44m\]\[\033[0;34m\]\[\033[44m\]\[\033[0;30m\]\[\033[44m\] \w \[\033[0m\]\[\033[0;34m\] \n \[\033[0;34m\]╰ \[\033[1;36m\]\$ \[\033[0m\]"
+    export PS1="\t \j \\w\$(git branch 2>/dev/null | grep '^*'| colrm 1 2)\\n> "
+    # export PS1_ORIG="\n \[\033[41m\]\[\033[0;31m\]\[\033[0;37m\]\[\033[41m\] $OS_ICON \A \[\033[0m\]\[\033[0;31m\]\[\033[44m\]\[\033[0;34m\]\[\033[44m\]\[\033[0;30m\]\[\033[44m\] \w \[\033[0m\]\[\033[0;34m\] \n \[\033[0;34m\]╰ \[\033[1;36m\]\$ \[\033[0m\]"
+    export PS1="\n\[\033[47m\]\[\033[0;37m\]\[\033[0;30m\]\[\033[47m\] 🐳 \A \[\033[0m\]\[\033[0;37m\]\[\033[44m\]\[\033[0;34m\]\[\033[44m\]\[\033[1;37m\]\[\033[44m\] \j \[\033[0m\]\[\033[0;34m\] \n\[\033[1;35m\]$ \[\033[0m\]"
+    export PS1='$(ps1_start "77;77;77" "33;33;255" "77;77;77" "$OS_ICON \t")$(ps1_jobs "77;77;77" "77;77;77" "33;33;255" "🏃 \j")$(ps1_beforelast "33;33;255" "77;77;77" "255;0;0"  "\w")$(ps1_git "33;33;255" "77;77;77" "77;77;77" "$(echo $(git branch 2>/dev/null | grep '^*' | colrm 1 2))")\n$ '
+    export PS2="|   "
 else 
-    export PS1="\[\e[36;1m\][\A] \[\e[31;1m\]\w> \[\e[0m\]"
-    export PS2="\[\e[31;1m\]> \[\e[0m\]"
+    export OS_ICON=🍎
+    export PS1='$(ps1_start "77;77;77" "33;33;255" "77;77;77" "$OS_ICON \t")$(ps1_jobs "77;77;77" "77;77;77" "33;33;255" "🏃 \j")$(ps1_beforelast "33;33;255" "77;77;77" "255;0;0"  "\w")$(ps1_git "33;33;255" "77;77;77" "77;77;77" "$(echo $(git branch 2>/dev/null | grep '^*' | colrm 1 2))")\n$ '
+    export PS2="|   "
 fi
 # export PS1="\[\e[36;1m\][\[\e[0;35m\]$HOSTSTUB\[\e[36;1m\]] \[\e[0;35m\]$HOSTSTUB \[\e[31;1m\]\w> \[\e[0m\]"
 # export PS2="\[\e[31;1m\]> \[\e[0m\]"
