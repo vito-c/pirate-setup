@@ -210,11 +210,13 @@ lockme()
 
 nv()
 {
-    if [[ -z $VIMRUNTIME ]]; then 
+    if [[ $(which nvim) != "/usr/local/bin/nvim" ]]; then
+        nvim "${@}"
+    elif [[ -z $VIMRUNTIME ]]; then 
         command /usr/local/bin/nvim "${@}"
     else
         command /usr/local/bin/nvr "${@}"
-     fi
+    fi
 }
 
 vi() {
@@ -390,8 +392,8 @@ else
     if [[ $HOSTSTUB == "" ]]; then
         export HOSTSTUB=$(hostname -s);
     fi
-    eb() { nvim $@ ~/.bash_awesome; }
-    cb() { source ~/.bash_awesome; }
+    eb() { nvim $CODE_CONFIGS/pirate-setup/bashrc; }
+    cb() { source $CODE_CONFIGS/pirate-setup/bashrc; }
     ls() { command ls --color=always "$@"; }
     ll() { command ls --color=always -lh "$@"; }
     la() { command ls --color=always -lha "$@"; }
