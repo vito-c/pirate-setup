@@ -1,34 +1,6 @@
 #!/usr/local/bin/bash
-# set -e
-# PATH="/usr/local/bin:$PATH"
-# trap 'rm -f .git/tags.{s,c}tags.'"$$" EXIT
-#
-# scala=$(find . -type d \( -name target -o -name .git -o -name modules \) -prune -o -name \*.scala -print)
-# echo RUNNING CTAG TAG GENERAATION
-# ctags --languages=-scala --tag-relative -Rf.git/tags.ctags.$$ --exclude=.git --exclude="node_modules" --exclude="*.min.js" --exclude="vendor" --exclude="vendors" --exclude="target"
-# cat .git/tags.ctags.$$ > .git/tags
-#
-# echo "NUM FOUND SCALA FILES: $(echo "$scala" | wc -l )"
-# if [[ $(echo "$scala" | wc -l ) -gt 0 ]]; then 
-#     echo RUNNING SCALA TAG GENERAATION
-#     stags ./ -o .git/tags.stags.$$
-#     cat .git/tags.stags.$$ | sed -E '/^!_.*$/d' >> .git/tags
-# fi
-
-
 set -e
 PATH="/usr/local/bin:$PATH"
 trap "rm -f .git/tags.$$" EXIT
 ctags --tag-relative -Rf.git/tags.$$ --exclude=.git --languages=-javascript,sql
 mv .git/tags.$$ .git/tags
-
-
-#SOURCES="$(pwd)"
-#FILETYPES=\*.cs
-#rm -f .git/cscope.out
-#find "$SOURCES" -name "$FILETYPES" -exec cscope -b {} +
-#mv cscope.out .git/cscope.out
-
-
-# find `pwd` -name "*.c" -o -name "*.h" -o -name "*.cpp" > cscope.files
-# cscope -b -q -k
