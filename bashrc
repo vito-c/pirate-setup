@@ -387,11 +387,6 @@ if [[ $(uname) =~ Darwin || $(uname) =~ FeeBSD ]]; then
 		echo -e "\033]50;SetProfile=$1\a"
 	}
 else
-    export FLEX_HOME="/var/lib/flexsdks/4.6.0.23201B"
-    export HOSTSTUB=$(regex='.*([A-Za-z]{3}-[0-9][0-9]).*'; [[ "$HOSTNAME" =~ $regex ]] && echo "${BASH_REMATCH[1]}");
-    if [[ $HOSTSTUB == "" ]]; then
-        export HOSTSTUB=$(hostname -s);
-    fi
     eb() { nvim $CODE_CONFIGS/pirate-setup/bashrc; }
     cb() { source $CODE_CONFIGS/pirate-setup/bashrc; }
     ls() { command ls --color=always "$@"; }
@@ -708,11 +703,6 @@ ssb(){ echo -e "\033];brobot\007"; ssh farm2-brobot-01.zc2.zynga.com $@; }
 ssvt(){ ssh vcutten@vito-tower.local $@; }
 ssdt(){ ssh redhand@destro-tower.local $@; }
 ssmb(){ ssh vcutten@vito-mbp.local $@; }
-
-openFlex()
-{
-	open -n "/Applications/Adobe Flash Builder 4.6/Adobe Flash Builder 4.6.app"
-}
 
 #RedTamarin
 #redrun
@@ -1678,8 +1668,12 @@ parse_yaml()
    }'
 }
 
-source $CODE_CONFIGS/pirate-setup/rally/scripts.sh
-source $CODE_CONFIGS/pirate-setup/rc/fzf
+if [[ -f "$CODE_CONFIGS/pirate-setup/rally/scripts.sh" ]]; then
+    source $CODE_CONFIGS/pirate-setup/rally/scripts.sh
+fi
+if [[ -f "$CODE_CONFIGS/pirate-setup/rc/fzf" ]]; then
+    source $CODE_CONFIGS/pirate-setup/rc/fzf
+fi
 # source ~/.pirate-setup/itermbkg
 
 port-validate() 
