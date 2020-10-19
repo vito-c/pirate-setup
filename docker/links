@@ -1,0 +1,12 @@
+#!/bin/bash
+ 
+ln -snf ~/code/configs/pirate-setup/bash_profile ~/.bash_profile 
+ln -snf ~/code/configs/pirate-setup/bashrc       ~/.bashrc       
+ln -snf ~/code/configs/pirate-setup/inputrc      ~/.inputrc      
+ln -snf ~/code/configs/pirate-setup/jqrc         ~/.jqrc         
+ln -snf ~/code/configs/pirate-setup/octaverc     ~/.octaverc     
+ln -snf ~/code/configs/pirate-setup/git_template ~/.git_template     
+ln -snf ~/code/configs/pirate-setup/gitconfig    ~/.gitconfig
+ln -snf ~/code/configs/pirate-vim/               ~/.vim          
+ln -snf ~/code/configs/pirate-vim                ~/.config/nvim
+mkdir -p ~/code/configs/pirate-vim/bundle

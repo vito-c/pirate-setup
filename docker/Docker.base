@@ -1,0 +1,47 @@
+FROM archlinux
+
+ARG OPENJDK_TAG=8u232
+ARG GITHUB_USER=vito-c
+ARG GITHUB_TOKEN=xxx
+
+RUN pacman -Sy --noconfirm jdk8-openjdk
+RUN pacman -Sy --noconfirm git ripgrep neovim jq sbt
+RUN pacman -Sy --noconfirm kubectl go fzf bat bash-completion
+RUN pacman -Sy --noconfirm yarn fd ctags
+RUN pacman -Sy --noconfirm python
+RUN pacman -Sy --noconfirm postgresql
+RUN pacman -Sc --noconfirm
+RUN mkdir -p ~/code/configs
+RUN mkdir -p ~/.config
+
+ADD https://api.github.com/repos/vito-c/pirate-setup/git/refs/heads/master version.json
+RUN git clone -b master https://$GITHUB_USER:$GITHUB_TOKEN@github.com/vito-c/pirate-setup ~/code/configs/pirate-setup
+
+ADD https://api.github.com/repos/vito-c/pirate-vim/git/refs/heads/master version.json
+RUN git clone -b master https://$GITHUB_USER:$GITHUB_TOKEN@github.com/vito-c/pirate-vim ~/code/configs/pirate-vim
+
+RUN sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
+        https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+
+RUN ln -snf ~/code/configs/pirate-setup/bash_profile ~/.bash_profile 
+RUN ln -snf ~/code/configs/pirate-setup/bashrc       ~/.bashrc       
+RUN ln -snf ~/code/configs/pirate-setup/inputrc      ~/.inputrc      
+RUN ln -snf ~/code/configs/pirate-setup/jqrc         ~/.jqrc         
+RUN ln -snf ~/code/configs/pirate-setup/octaverc     ~/.octaverc     
+RUN ln -snf ~/code/configs/pirate-setup/git_template ~/.git_template     
+RUN ln -snf ~/code/configs/pirate-setup/gitconfig    ~/.gitconfig
+RUN ln -snf ~/code/configs/pirate-vim/               ~/.vim          
+RUN ln -snf ~/code/configs/pirate-vim                ~/.config/nvim
+RUN mkdir -p ~/code/configs/pirate-vim/bundle
+
+ENV HOSTNAME=dorker
+
+RUN nvim -u ~/code/configs/pirate-vim/rc/vimrc-plugins +PlugInstall +qall || true
+RUN cd ~/code/configs/pirate-vim/bundle/coc.nvim && yarn install --frozen-lockfile && mkdir -p ~/.config/coc
+
+# RUN /bin/bash -c nvim +PlugInstall +qall
+# RUN ["/bin/bash", "-c", "nvim +PlugInstall +qall &> /dev/null"]
+# RUN nvim +call coc#util#install() > /dev/null 
+
+# vim: filetype=dockerfile
+
