@@ -1,0 +1,102 @@
+#!/usr/local/bin/bash
+
+ytoj()
+{
+    for file in "${@}"; do 
+        parse=$(python3 -c 'import sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4)' < "$file" 2> /dev/null)
+        err="$?"
+        if [[ "$err" -gt 0 ]]; then
+            python3 -c 'import datetime, sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4, default= lambda o: o.__str__() if isinstance(o, datetime.datetime) else None)' < "$file"
+        else
+            echo "${parse}"
+        fi
+    done
+    # only works for one file in the stream so 
+    if [[ -z "$1" ]]; then
+        python3 -c 'import datetime, sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4, default= lambda o: o.__str__() if isinstance(o, datetime.datetime) else None)'
+    fi
+}
+jtoy()
+{
+    if [[ -n "$2" ]]; then
+        python3 -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)' < $1 > $2
+    elif [[ -n "$1" ]]; then
+        python3 -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)' < $1
+    else
+        python3 -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)'
+    fi
+}
+# ymmv
+json_columns() {
+    # Non recursive output will only be two columns and the input needs to be in the form of a key value pair
+    # i.e. input { "key1": "value1", "key2": "value2", "key3": "value3" }
+    # output:
+    # key1 value1
+    # key2 value2
+    # key3 value3
+
+    if [[ ${#} -gt 0 ]]; then
+        obj="${@}"
+    else
+        read -r obj
+    fi
+    keys=$(echo "$obj" | jq -c 'to_entries | map(.key)')
+    values=$(echo "$obj" | jq -c 'to_entries | map(.value)')
+
+    # echo kyes $keys
+    # echo values $values
+    for ((j=0; j< $(echo "$keys" | jq 'length'); ++j )); do 
+        key="$(echo $keys | jq -c '.['$j']' | jq -r '.')"; 
+        value="$(echo $values | jq -c '.['$j']' | jq -r '.')"; 
+        printf "%-10s %10s\n" "$key" "$value";
+    done
+}
+
+json_array_columns() {
+    # Non recursive output will only be two columns and the input needs to be in the form of a key value pair
+    # i.e. input { "key1": "value1", "key2": "value2", "key3": "value3" }
+    # output:
+    # key1 value1
+    # key2 value2
+    # key3 value3
+
+    if [[ ${#} -gt 0 ]]; then
+        obj="${@}"
+    else
+        read -r obj
+    fi
+    keys=$(echo "$obj" | jq -c 'to_entries | map(.key)')
+    values=$(echo "$obj" | jq -c 'to_entries | map(.value)')
+    headers=$(echo "$obj" | jq -c 'to_entries | map(.value)|.[0]|map(to_entries|map(.key))|add')
+    map=$(echo "$obj" | jq -c 'to_entries|map({(.key):.value|add})|add')
+    len=$(echo "$keys" | jq 'length')
+    echo $len
+    # echo kyes $keys
+    # echo values $values
+    for ((j=0; j<$len; ++j )); do 
+        key="$(echo $keys | jq -c '.['$j']' | jq -r '.')"; 
+        prod="$(echo $map | jq -c '.["'"$key"'"]["'"prod/sortinghat/web"'"]' | jq -r '.')"; 
+        devc="$(echo $map | jq -c '.["'"$key"'"]["'"dev-core/sortinghat/web"'"]' | jq -r '.')"; 
+        blue="$(echo $map | jq -c '.["'"$key"'"]["'"bluesteel/sortinghat/web"'"]' | jq -r '.')"; 
+        inte="$(echo $map | jq -c '.["'"$key"'"]["'"integration/sortinghat/web"'"]' | jq -r '.')"; 
+        load="$(echo $map | jq -c '.["'"$key"'"]["'"load-test/sortinghat/web"'"]' | jq -r '.')"; 
+        printf "%-10s %10s %10s %10s %10s %10s\n" "$key" "$prod" "$blue" "$inte" "$load" "$devc";
+    done
+}
+
+# Not really sure what this  does right now
+jmap()
+{
+    filter="$1"
+    some_func="$2"
+    json_file="$3"
+    echo $filter
+    jfilter=$(jq -c "${filter}" ${json_file})
+    echo $jfilter
+    echo $some_func
+    for ((j=0; j< $(echo $jfilter | jq 'length'); ++j )); do
+        item=$(echo $jfilter | jq -c '.['$j']');
+        echo $item
+        echo "${item}" | ${some_func}
+    done;
+}

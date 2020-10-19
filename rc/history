@@ -1,0 +1,43 @@
+#!/usr/local/bin/bash
+
+print_command() {
+    printf '"exe": %s,' "$(printf '%s' "${1}" | jq -aRs '.' )"
+    printf '"cmd": %s,' "$(printf '%s' "${1}" | awk '{printf "%s", $1}'  | jq -aRs '.' )"
+    printf '"params": ['
+    params=$(for word in ${1}; do printf '%s,' "$(printf '%s' "${word}" | jq -aRs '.')"; done)
+    params=${params::-1}
+    printf '%s' "${params}"
+    printf '],'
+    printf '"md5":"'$(echo $1 | md5 -q)'"}'
+}
+
+jsonize_current_history() {
+    line_count=$(wc -l $1 | sed -E 's/ *([0-9]*) .*/\1/g')
+    count=0
+    fullcmd=""
+
+    echo "["; 
+    while IFS= read -r line
+    do
+        count=$(( $count + 1 ));
+        if [[ ${line} =~ ^#[0-9]+ ]]; then
+            # start
+            if [[ $fullcmd == "" ]]; then
+                printf '{"time":"%s",\n' "${line}"
+            else 
+                print_command "${fullcmd}"
+                printf ","
+                printf '{"time":"%s",\n' "${line}"
+                fullcmd=""
+            fi
+        else 
+            # slurp  up command
+            # fullcmd=$(printf '%s' "${fullcmd} ${line}")
+            fullcmd="${fullcmd}${line}"
+            if (( $count == $line_count )); then
+                print_command "${fullcmd}"
+            fi
+        fi
+    done < $1 
+    echo "]"
+}

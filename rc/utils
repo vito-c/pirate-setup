@@ -1,0 +1,108 @@
+#!/usr/local/bin/bash
+lockme()
+{
+    if [[ $(uname) ==  "Darwin" ]]; then
+        open /System/Library/CoreServices/ScreenSaverEngine.app
+    else
+        echo "TBD"
+    fi
+
+}
+
+#export NVIM_LISTEN_ADDRESS=8000
+
+nv()
+{
+    if [[ $(which nvim) != "/usr/local/bin/nvim" ]]; then
+        nvim "${@}"
+    elif [[ -z $VIMRUNTIME ]]; then 
+        command /usr/local/bin/nvim "${@}"
+    else
+        command /usr/local/bin/nvr "${@}"
+    fi
+}
+
+vi() {
+    start_addr=8000
+    if [[ -z $NEOVIM_LISTEN_ADDRESS ]]; then
+        # not running inside nvim
+        nvim "$@"
+    else
+        python -c "from neovim import attach; nvim = attach('tcp', '127.0.0.1','$start_addr'); nvim.command('args $@');"
+    fi
+}
+
+eb()
+{
+    # echo -e "\033];BASHRC\007";
+    #trap 'echo -e "\033];bash\007"' SIGTERM SIGKILL SIGQUIT
+    #trap 'echo -e "\033];bash\007";' EXIT
+    # command /usr/local/bin/nvim $@ $CODE_CONFIGS/pirate-setup/bashrc;
+    nv $CODE_CONFIGS/pirate-setup/bashrc;
+}
+eg() { nv $CODE_CONFIGS/pirate-setup/gitconfig; }
+ev() { nv $CODE_CONFIGS/pirate-vim/rc/vimrc; }
+cb() { source ~/.bash_profile; }
+ls() { command ls -G "$@"; }
+ehco() { command echo "$@"; }
+gti() { command git "$@"; }
+cmhod() { command chmod "$@"; }
+ll() { command ls -lGh "$@"; }
+la() { command ls -lGha "$@"; }
+
+excuse()
+{
+	curl -s http://developerexcuses.com/ | perl -ne '/center.*nofollow.*?>(.*?)<\/a>/ and print "$1\n"'
+}
+
+v2d2-addjoke()
+{
+    v2d2dir="/Users/vitocutten/playground/V2D2-old"
+    v2d2ans="${v2d2dir}/src/org/v2d2/skype/jokes/Answers.java"
+    v2d2cls="${v2d2dir}/src/org/v2d2/skype/jokes/Clues.java"
+    printf '%s\n' 161i "        \"${1}\"," . w | ed -s ${v2d2cls}
+    printf '%s\n' 801i "        \"${2}\"," . w | ed -s ${v2d2ans}
+    git --work-tree=${v2d2dir} --git-dir=${v2d2dir}/.git diff -- ${v2d2ans} ${v2d2cls}
+}
+
+ytoj()
+{
+    for file in "${@}"; do 
+        parse=$(python3 -c 'import sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4)' < "$file" 2> /dev/null)
+        err="$?"
+        if [[ "$err" -gt 0 ]]; then
+            python3 -c 'import datetime, sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4, default= lambda o: o.__str__() if isinstance(o, datetime.datetime) else None)' < "$file"
+        else
+            echo "${parse}"
+        fi
+    done
+    # only works for one file in the stream so 
+    if [[ -z "$1" ]]; then
+        python3 -c 'import datetime, sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4, default= lambda o: o.__str__() if isinstance(o, datetime.datetime) else None)'
+    fi
+}
+
+jtoy()
+{
+    if [[ -n "$2" ]]; then
+        python3 -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)' < $1 > $2
+    elif [[ -n "$1" ]]; then
+        python3 -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)' < $1
+    else
+        python3 -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)'
+    fi
+}
+
+killaudio()
+{
+	if [[ $(uname) =~ Darwin ]]; then
+        kill $(ps ax|grep 'coreaudio[a-z]' | awk '{print $1}')
+    else 
+        echo "lol"
+    fi
+}
+
+unzip_stream()
+{
+	python -c "import zipfile,sys,StringIO;zipfile.ZipFile(StringIO.StringIO(sys.stdin.read())).extractall(sys.argv[1] if len(sys.argv) == 2 else '.')";
+}

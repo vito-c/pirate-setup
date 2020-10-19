@@ -1,0 +1,21 @@
+#!/usr/local/bin/bash
+
+if [[ $(uname) =~ Darwin ]]; then
+    if hash brew 2>/dev/null; then
+        for completion_file in $(brew --prefix)/etc/bash_completion.d/*; do
+            source "$completion_file"
+        done
+        if [[ -f $(brew --prefix)/share/bash-completion/bash_completion ]]; then
+            source $(brew --prefix)/share/bash-completion/bash_completion;
+            for completion_file in $(brew --prefix)/share/bash-completion/completions/*; do
+                source "$completion_file"
+            done
+
+        fi
+        # if [[ -f $(brew --prefix)/etc/bash_completion ]]; then
+        #     . $(brew --prefix)/etc/bash_completion
+        # fi
+    fi
+fi
+
+source <(kubectl completion bash)

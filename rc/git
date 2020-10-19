@@ -1,0 +1,10 @@
+#!/usr/local/bin/bash
+
+git-pum()
+{
+    # cb=$(git rev-parse --abbrev-ref HEAD)
+    git stash
+    git pull upstream master
+    git stash pop
+}
+

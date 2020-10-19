@@ -1874,7 +1874,6 @@ json_array_columns() {
     done
 }
 
-
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
 [ -f ~/code/configs/pirate-setup/rally ] && source ~/code/configs/pirate-setup/rally/*
 
