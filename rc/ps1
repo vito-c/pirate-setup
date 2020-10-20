@@ -138,7 +138,8 @@ elif [[ $(uname) == "Darwin" ]]; then
     export PS1='$(ps1_start "77;77;77" "33;33;255" "77;77;77" "$OS_ICON \t")$(ps1_jobs "77;77;77" "77;77;77" "33;33;255" "🏃 \j")$(ps1_beforelast "33;33;255" "77;77;77" "255;0;0"  "\w")$(ps1_git "33;33;255" "77;77;77" "77;77;77" "$(echo $(git branch 2>/dev/null | grep '^*' | colrm 1 2))")\n$ '
     export PS2="|   "
 else 
-    export OS_ICON=⟑
+    export OS_ICON=🐧
+    # ⚡ 🐨 🐼 👾 💀 🔘 💥
     export PS1='$(ps1_start "77;77;77" "33;33;255" "77;77;77" "$OS_ICON \t")$(ps1_jobs "77;77;77" "77;77;77" "33;33;255" "🏃 \j")$(ps1_beforelast "33;33;255" "77;77;77" "255;0;0"  "\w")$(ps1_git "33;33;255" "77;77;77" "77;77;77" "$(echo $(git branch 2>/dev/null | grep '^*' | colrm 1 2))")\n$ '
     export PS2="|   "
 fi

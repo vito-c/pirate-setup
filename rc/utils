@@ -56,7 +56,11 @@ if [[ $(uname) == "Darwin" ]]; then
 else 
     ll() { command ls -lh --color "$@"; }
 fi
-la() { command ls -lGha "$@"; }
+if [[ $(uname) == "Darwin" ]]; then
+    la() { command ls -lGha "$@"; }
+else
+    la() { command ls -lha --color "$@"; }
+fi
 
 excuse()
 {
