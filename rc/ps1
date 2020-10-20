@@ -25,9 +25,9 @@ function gradient() {
 
     for (colnum = 1; colnum<term_cols; colnum++) {
         s = substr(txt, colnum,1);
-        r = (r + ri >= re && ri > 0 || r + ri <= 0 && ri < 0)? re : r + ri;
-        g = (g + gi >= ge && gi > 0 || g + gi <= 0 && gi < 0)? ge : g + gi;
-        b = (b + bi >= be && bi > 0 || b + bi <= 0 && bi < 0)? be : b + bi;
+        r = (r + ri >= re && ri > 0 || r + ri <= re && ri < 0)? re : r + ri;
+        g = (g + gi >= ge && gi > 0 || g + gi <= ge && gi < 0)? ge : g + gi;
+        b = (b + bi >= be && bi > 0 || b + bi <= be && bi < 0)? be : b + bi;
         printf "\033[48;2;%d;%d;%dm", r,g,b;
         printf "\033[38;2;%d;%d;%dm", 255-r,255-g,255-b;
         printf "%s\033[0m", s;
@@ -60,7 +60,7 @@ function ps1_start() {
     [[ -z "${4+x}" ]] && local itxt="$OS_ICON xx" || local itxt="$4"
     local tcfg="255;0;0"
 
-    local otxt=$(gradient "${scbg}" "${ecbg}" " ${itxt} " "30")
+    local otxt=$(gradient "${scbg}" "${ecbg}" " ${itxt} " "50")
     # printf "\n\e[38;2;${scbg}m\e[48;2;${scbg}m \e[0m%s\e[48;2;${ecbg}m\e[38;2;${ecbg}m \e[48;2;${ncbg}m\e[0m" "${otxt}"
     # \n\[\33[47m\]
     echo -e "\033[38;2;${scbg}m\033[48;2;${scbg}m \033[0m${otxt}\033[48;2;${ecbg}m\033[38;2;${ecbg}m \033[48;2;${ncbg}m\033[0m"
@@ -90,14 +90,20 @@ function ps1_mid() {
 
 function ps1_beforelast() {
     #115,174,233
+    local nbs="$(printf '\u00a0')"
     [[ -z "${1+x}" ]] && local scbg="30;50;30"  || local scbg="$1"
     [[ -z "${2+x}" ]] && local ecbg="98;206;80" || local ecbg="$2"
     [[ -z "${3+x}" ]] && local ncbg="255;0;0"   || local ncbg="$3"
-    [[ -z "${4+x}" ]] && local itxt=" xx"   || local itxt="$4"
+    [[ -z "${4+x}" ]] && local itxt=" xx"       || local itxt="$4"
     local tcfg="255;0;0"
 
+    itxt="${itxt}${nbs}"
+    while (( ${#itxt} < 4 )); do
+        itxt="${itxt}${nbs}"
+    done
+        
     local otxt=$(gradient "${scbg}" "${ecbg}" " ${itxt} " "30")
-    printf "\e[38;2;${scbg}m\e[48;2;${scbg}m \e[0m%s\e[48;2;${ecbg}m\e[38;2;${ecbg}m \e[0m\n" "${otxt}"
+    printf "\e[0m\e[38;2;${scbg}m\e[48;2;${scbg}m \e[0m%s\e[48;2;${ecbg}m\e[38;2;${ecbg}m \e[0m\n" "${otxt}"
 }
 
 function ps1_git() {
