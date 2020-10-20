@@ -43,11 +43,19 @@ eb()
 eg() { nv $CODE_CONFIGS/pirate-setup/gitconfig; }
 ev() { nv $CODE_CONFIGS/pirate-vim/rc/vimrc; }
 cb() { source ~/.bash_profile; }
-ls() { command ls -G "$@"; }
+if [[ $(uname) == "Darwin" ]]; then
+    ls() { command ls -G "$@"; }
+else
+    ls() { command ls --color "$@"; }
+fi
 ehco() { command echo "$@"; }
 gti() { command git "$@"; }
 cmhod() { command chmod "$@"; }
-ll() { command ls -lGh "$@"; }
+if [[ $(uname) == "Darwin" ]]; then
+    ll() { command ls -lGh "$@"; }
+else 
+    ll() { command ls -lh --color "$@"; }
+fi
 la() { command ls -lGha "$@"; }
 
 excuse()
