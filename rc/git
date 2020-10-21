@@ -8,3 +8,19 @@ git-pum()
     git stash pop
 }
 
+git-setstream()
+{
+   url=$(git remote -v | tail -1 | awk '{ print $2 }'); 
+   if [[ $(git remote | wc -l) -lt 2 && ${url} =~ .*\.git && ${url} =~ .*AudaxHealthInc.* ]]; then 
+       origin=$(echo $url | sed 's/AudaxHealthInc/vito-c/g')
+       git remote rename origin upstream
+       git remote add origin ${origin}
+   else 
+       echo "already setup"; 
+   fi
+}
+
+git-setit()
+{
+    git push --set-upstream origin $(git rev-parse --abbrev-ref HEAD)
+}

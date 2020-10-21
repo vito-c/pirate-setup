@@ -21,6 +21,11 @@ PATH="$PATH:$GOPATH/bin"
 PATH="$PATH:$HOME/.cargo/bin"
 PATH="$PATH:$HOME/code/personal/KotlinLanguageServer/server/build/install/server/bin"
 
+if [[ $(uname) == "Darwin" ]]; then
+    export JAVA_HOME=$(/usr/libexec/java_home)
+else
+    export JAVA_HOME=$(/usr/lib/jvm/default)
+fi 
 export ASYNC_PROFILER_DIR=$HOME/code/playground/async-profiler  
 export FLAME_GRAPH_DIR=$HOME/code/playground/FlameGraph  
 
