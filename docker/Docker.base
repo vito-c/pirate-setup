@@ -8,11 +8,12 @@ RUN pacman -Sy --noconfirm jdk8-openjdk
 RUN pacman -Sy --noconfirm git ripgrep neovim jq sbt
 RUN pacman -Sy --noconfirm kubectl go fzf bat bash-completion
 RUN pacman -Sy --noconfirm yarn fd ctags
-RUN pacman -Sy --noconfirm python
+RUN pacman -Sy --noconfirm python python-pip
 RUN pacman -Sy --noconfirm postgresql
 RUN pacman -Sc --noconfirm
 RUN mkdir -p ~/code/configs
 RUN mkdir -p ~/.config
+RUN python3 -m pip install --upgrade pynvim
 
 ADD https://api.github.com/repos/vito-c/pirate-setup/git/refs/heads/master version.json
 RUN git clone -b master https://$GITHUB_USER:$GITHUB_TOKEN@github.com/vito-c/pirate-setup ~/code/configs/pirate-setup

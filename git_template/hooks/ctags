@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 set -e
-echo "$(pwd)"  > ./ctags.log
 if [[ -f "$(pwd)/build.sbt" || -f "$(pwd)/build.sc" ]]; then
     echo "no tags" > .git/ctags.log
 else 
     PATH="/usr/local/bin:$PATH"
     trap "rm -f .git/tags.$$" EXIT
-    ctags --tag-relative -Rf.git/tags.$$ --exclude=.git --languages=-javascript,sql
+    ctags --tag-relative -Rf.git/tags.$$ --exclude=.git --languages=-javascript,sql,java
     mv .git/tags.$$ .git/tags
     chmod +xr .git/tags
 fi
