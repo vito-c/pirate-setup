@@ -1,5 +1,4 @@
-#!/usr/local/bin/bash
-#!/bin/sh
+#!/usr/bin/env bash
 case "$1" in
   rebase) exec .git/hooks/post-merge ;;
 esac
