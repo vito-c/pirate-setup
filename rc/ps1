@@ -118,7 +118,7 @@ function ps1_git() {
     if [[ ${itxt} == "" ]]; then
       printf "\e[0m\e[38;2;${ocbg}m\e[0m"
     else 
-      local otxt=$(gradient "${scbg}" "${ecbg}" "🔀 ${itxt} " "50")
+      local otxt=$(gradient "${scbg}" "${ecbg}" " ${itxt} " "50")
       printf "\e[38;2;${ocbg}m\e[48;2;${scbg}m\e[38;2;${scbg}m \e[0m%s\e[48;2;${ecbg}m\e[38;2;${ecbg}m \e[0m\e[38;2;${ecbg}m\e[0m\n" "${otxt}"
     fi
 }
