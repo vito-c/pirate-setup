@@ -6,6 +6,7 @@
 	ignorecase = true
 	excludesfile = /Users/vitocutten/.gitignore_global
 	editor = nvim
+	# editor = nvim# nvr --remote-wait-silent
 [alias]
 	################################### Rebase Commands ###################################
 	rc = rebase --continue
@@ -21,10 +22,12 @@
     root = rev-parse --show-toplevel
     pump = !git pull upstream master
 	sup = submodule update
+	cm = commit -m
 	ci = commit -a -m
     ca = commit -a --amend --no-edit
     fix = !git commit -a --amend -m $(git log -1 --pretty=%B) && git pf
 	cp = cherry-pick
+    com = !git checkout upstream/master
 	co = checkout
 	todo = grep --heading --break --ignore-case -e ' FIX: *' -e ' TODO: *'
 	in = !/Users/vcutten/workrepos/farmville-main/util/git/incoming.sh
@@ -37,8 +40,12 @@
 	rev = !git show --name-status $1
 	dt = difftool
 	d = !git --no-pager diff
+	dm = !git diff upstream/master
+	dmn = !git diff upstream/master  --name-only
+	dmw = !git diff upstream/master  --word-diff
 	dw = !git --no-pager diff --word-diff
 	dl = !git --no-pager diff --name-only
+    dn = !git --no-pager diff --name-only
 	l = !git log --oneline --decorate
     ll = !git log --name-only
     log = !git --no-pager log
@@ -60,7 +67,11 @@
   tool = nvim
 # automatically launch merge tool without displaying a prompt
 [mergetool]
+  keepBackup = false
   prompt = false
+# [mergetool "nvr"]
+  #cmd = vimdiff --remote-wait-silent -d $BASE $LOCAL $REMOTE $MERGED -c '$wincmd w' -c 'wincmd J'
+  # cmd = nvr -s -d $LOCAL $BASE $REMOTE $MERGED -c 'wincmd J | wincmd ='
 [push]
 	default = tracking
 [diff]
