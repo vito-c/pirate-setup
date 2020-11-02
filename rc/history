@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash
+#!/usr/bin/env bash
 
 print_command() {
     printf '"exe": %s,' "$(printf '%s' "${1}" | jq -aRs '.' )"

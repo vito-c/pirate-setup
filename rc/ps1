@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash
+#!/usr/bin/env bash
 
 function gradient() {
     local start=$([ -z "${1+x}" ] && echo "255;0;0" || echo $1)

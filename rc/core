@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash
+#!/usr/bin/env bash
 
 # this is in the root bashrc
 export CODE_CONFIGS=$HOME/code/configs
@@ -14,12 +14,11 @@ shopt -s globstar
 shopt -s lithist cmdhist
 
 # Environment
-export PATH="/usr/local/sbin:/usr/local/bin:$PATH:~/Library/Python/2.7/bin:$HOME/code/configs/pirate-setup/bin:/usr/texbin:/usr/local/opt/go/libexec/bin"
+export PATH="/usr/local/sbin:/usr/local/bin:$PATH:$HOME/code/configs/pirate-setup/bin"
 # export PATH="/usr/local/opt/scala@2.11/bin:/usr/local/octave/3.8.0/bin:$PATH"
 export GOPATH="$HOME/code/go"
 PATH="$PATH:$GOPATH/bin"
 PATH="$PATH:$HOME/.cargo/bin"
-PATH="$PATH:$HOME/code/personal/KotlinLanguageServer/server/build/install/server/bin"
 
 if [[ $(uname) == "Darwin" ]]; then
     export JAVA_HOME=$(/usr/libexec/java_home)
