@@ -14,7 +14,7 @@ shopt -s globstar
 shopt -s lithist cmdhist
 
 # Environment
-export PATH="/usr/local/sbin:/usr/local/bin:$PATH:$HOME/code/configs/pirate-setup/bin"
+export PATH="/usr/local/sbin:/usr/local/bin:$PATH:$HOME/code/configs/pirate-setup/bin:$HOME/.local/bin"
 # export PATH="/usr/local/opt/scala@2.11/bin:/usr/local/octave/3.8.0/bin:$PATH"
 export GOPATH="$HOME/code/go"
 PATH="$PATH:$GOPATH/bin"

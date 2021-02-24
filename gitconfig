@@ -4,7 +4,7 @@
 [core]
 	autocrlf = input
 	ignorecase = true
-	excludesfile = /Users/vitocutten/.gitignore_global
+	excludesfile = /home/cosmo/.gitignore
 	editor = nvim
 	# editor = nvim# nvr --remote-wait-silent
 [alias]
@@ -83,8 +83,6 @@
 	prompt = false
 [init]
 	#templatedir = ~/.git_template
-[hub]
-	host = github-ca.corp.zynga.com
 [github]
 	user = vito-c
 [branch]
@@ -98,5 +96,5 @@
 # [url "ssh://git@github.com/AudaxHealthInc/"]
 #     insteadOf = https://github.com/AudaxHealthInc/
 #
-[url "ssh://git@github.com/AudaxHealthInc/"]
-	insteadOf = https://github.com/AudaxHealthInc/
+# [url "ssh://git@github.com/AudaxHealthInc/"]
+# 	insteadOf = https://github.com/AudaxHealthInc/
