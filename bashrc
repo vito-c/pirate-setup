@@ -9,5 +9,6 @@ source $BASH_CONFIGS/rc/history     # ~/code/configs/pirate-setup/rc/history
 source $BASH_CONFIGS/rc/json        # ~/code/configs/pirate-setup/rc/json
 source $BASH_CONFIGS/rc/ps1         # ~/code/configs/pirate-setup/rc/ps1
 source $BASH_CONFIGS/rc/utils       # ~/code/configs/pirate-setup/rc/utils
+source ~/code/rally/Goose/helpers/scripts # ~/code/rally/Goose/helpers/scripts
 
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash

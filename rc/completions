@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
-
-if [[ $(uname) =~ Darwin ]]; then
+if [[ -z "${COMPLETIONS_LOADED+x}" ]]; then
+    export COMPLETIONS_LOADED="0"
+fi
+if [[ $(uname) =~ Darwin && $COMPLETIONS_LOADED == "0" ]]; then
+    export COMPLETIONS_LOADED="1"
     if hash brew 2>/dev/null; then
         for completion_file in $(brew --prefix)/etc/bash_completion.d/*; do
             source "$completion_file"

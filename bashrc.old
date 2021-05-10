@@ -858,7 +858,7 @@ get-config()
 
 build-m17()
 {
-	TOKEN="2caddd33af1a18e53cee7645d82144e1"
+	TOKEN="xxxxxxxxxxxxxx"
 	SOURCE="http://ci.farm3.zynga.com"
 	JOB_NAME="M17_Pod_iOS"
 	URL="$SOURCE/buildByToken/buildWithParameters?job=$JOB_NAME&token=$TOKEN"
@@ -1703,12 +1703,6 @@ port-update()
     jq --argjson port ${1} '.container.docker.portMappings[0].servicePort |= $port' \
         ${mesosfile} > ${mesosfile}.tmp && mv ${mesosfile}.tmp ${mesosfile}
 }
-
-RALLY_CI_TOKEN='aea81b3742fe7e58aa8dcc052ca01d4e'
-RALLY_CI_USER='vito-c'
-RALLY_CI_API='https://rally-jenkins.werally.in/'
-
-HIPCHAT_API='https://api.hipchat.com/v2'
 
 if [[ -f $CODE_CONFIGS/pirate-setup/wintermute/bin/jumpto ]]; then
     source $CODE_CONFIGS/pirate-setup/wintermute/bin/jumpto 

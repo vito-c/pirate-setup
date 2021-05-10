@@ -1,19 +1,41 @@
 #!/usr/bin/env bash
 
+export NBS="$(printf '\u00a0')"
+export PS1_SEP=" "
+
+###############################################################################
+# Draws a gradient with text overlay (text over color is automatic)
+# ARGUMENTS:
+#   1. Start Color in "R;G;B" format ie: Red = "255;0;0"
+#   2. End Color in "R;G;B" format ie: Red = "255;0;0"
+#   3. Text the text to overlay on the gradient
+#   4. Percent of text to cover with gradient
+# OUTPUTS:
+#   Writes a String to stdout with a gradient background
+# RETURN:
+#   0 if print succeeds, non-zero on error.
+###############################################################################
 function gradient() {
+    # inputs
     local start=$([ -z "${1+x}" ] && echo "255;0;0" || echo $1)
     local end=$([ -z "${2+x}" ] && echo "0;0;255" || echo $2)
     local text=$([ -z "${3+x}" ] && echo "\\t" || echo $3)
     local perc=$([ -z "${4+x}" ] && echo "100" || echo $4)
+
+    # input text number of characters
     local tcol=$(echo $text | wc -c)
 
+    # start RGB codes
     local sr=$(echo $start | awk -F";" '{print $1}')
     local sg=$(echo $start | awk -F";" '{print $2}')
     local sb=$(echo $start | awk -F";" '{print $3}')
 
+    # end RGB codes
     local er=$(echo $end | awk -F";" '{print $1}')
     local eg=$(echo $end | awk -F";" '{print $2}')
     local eb=$(echo $end | awk -F";" '{print $3}')
+
+    # the meat
     gawk -v term_cols="${tcol}" -v txt="${text}" -v p="${perc}" \
         -v r="${sr}" -v g="${sg}" -v b="${sb}" \
         -v re="${er}" -v ge="${eg}" -v be="${eb}" \
@@ -58,12 +80,13 @@ function ps1_start() {
     [[ -z "${2+x}" ]] && local ecbg="77;77;255" || local ecbg="$2"
     [[ -z "${3+x}" ]] && local ncbg="30;50;30"  || local ncbg="$3"
     [[ -z "${4+x}" ]] && local itxt="$OS_ICON xx" || local itxt="$4"
-    local tcfg="255;0;0"
+    local itxt="${OS_ICON}${NBS}${NBS}${itxt}"
 
-    local otxt=$(gradient "${scbg}" "${ecbg}" " ${itxt} " "50")
-    # printf "\n\e[38;2;${scbg}m\e[48;2;${scbg}m \e[0m%s\e[48;2;${ecbg}m\e[38;2;${ecbg}m \e[48;2;${ncbg}m\e[0m" "${otxt}"
+    local tcfg="255;0;0"
+    local otxt=$(gradient "${scbg}" "${ecbg}" "${itxt}" "50")
+    # printf "\n\e[38;2;${scbg}m\e[48;2;${scbg}m \e[0m%s\e[48;2;${ecbg}m\e[38;2;${ecbg}m \e[48;2;${ncbg}m${PS1_SEP}\e[0m" "${otxt}"
     # \n\[\33[47m\]
-    echo -e "\033[38;2;${scbg}m\033[48;2;${scbg}m \033[0m${otxt}\033[48;2;${ecbg}m\033[38;2;${ecbg}m \033[48;2;${ncbg}m\033[0m"
+    echo -e "\033[38;2;${scbg}m\033[48;2;${scbg}m \033[0m${otxt}\033[48;2;${ecbg}m\033[38;2;${ecbg}m \033[48;2;${ncbg}m${PS1_SEP}\033[0m"
 }
 
 function ps1_jobs() {
@@ -73,7 +96,7 @@ function ps1_jobs() {
     [[ -z "${4+x}" ]] && local itxt="🏃 x"     || local itxt="$4"
     local otxt=$(gradient "${scbg}" "${ecbg}" " ${itxt} " "0")
 
-    printf "\e[38;2;${scbg}m\e[48;2;${scbg}m \e[0m%s\e[48;2;${ecbg}m\e[38;2;${ecbg}m \e[48;2;${ncbg}m\e[0m" "${otxt}"
+    printf "\e[38;2;${scbg}m\e[48;2;${scbg}m \e[0m%s\e[48;2;${ecbg}m\e[38;2;${ecbg}m \e[48;2;${ncbg}m${PS1_SEP}\e[0m" "${otxt}"
 }
 
 function ps1_mid() {
@@ -85,21 +108,20 @@ function ps1_mid() {
     local tcfg="255;0;0"
 
     local otxt=$(gradient "${scbg}" "${ecbg}" " ${itxt} " "30")
-    printf "\e[38;2;${scbg}m\e[48;2;${scbg}m \e[0m%s\e[48;2;${ecbg}m\e[38;2;${ecbg}m \e[48;2;${ncbg}m\e[0m" "${otxt}"
+    printf "\e[38;2;${scbg}m\e[48;2;${scbg}m \e[0m%s\e[48;2;${ecbg}m\e[38;2;${ecbg}m \e[48;2;${ncbg}m${PS1_SEP}\e[0m" "${otxt}"
 }
 
 function ps1_beforelast() {
     #115,174,233
-    local nbs="$(printf '\u00a0')"
     [[ -z "${1+x}" ]] && local scbg="30;50;30"  || local scbg="$1"
     [[ -z "${2+x}" ]] && local ecbg="98;206;80" || local ecbg="$2"
     [[ -z "${3+x}" ]] && local ncbg="255;0;0"   || local ncbg="$3"
     [[ -z "${4+x}" ]] && local itxt=" xx"       || local itxt="$4"
     local tcfg="255;0;0"
 
-    itxt="${itxt}${nbs}"
+    itxt="${itxt}${NBS}"
     while (( ${#itxt} < 4 )); do
-        itxt="${itxt}${nbs}"
+        itxt="${itxt}${NBS}"
     done
         
     local otxt=$(gradient "${scbg}" "${ecbg}" " ${itxt} " "30")
@@ -116,10 +138,10 @@ function ps1_git() {
     # $( git branch 2>/dev/null | grep '^*' | colrm 1 2)
 
     if [[ ${itxt} == "" ]]; then
-      printf "\e[0m\e[38;2;${ocbg}m\e[0m"
+      printf "\e[0m\e[38;2;${ocbg}m${PS1_SEP}\e[0m"
     else 
-      local otxt=$(gradient "${scbg}" "${ecbg}" " ${itxt} " "50")
-      printf "\e[38;2;${ocbg}m\e[48;2;${scbg}m\e[38;2;${scbg}m \e[0m%s\e[48;2;${ecbg}m\e[38;2;${ecbg}m \e[0m\e[38;2;${ecbg}m\e[0m\n" "${otxt}"
+      local otxt=$(gradient "${scbg}" "${ecbg}" " ${itxt} " "50")
+      printf "\e[38;2;${ocbg}m\e[48;2;${scbg}m${PS1_SEP}\e[38;2;${scbg}m \e[0m%s\e[48;2;${ecbg}m\e[38;2;${ecbg}m \e[0m\e[38;2;${ecbg}m${PS1_SEP}\e[0m\n" "${otxt}"
     fi
 }
 
@@ -129,17 +151,75 @@ if [[ $HOSTNAME == "dorker" ]]; then
     echo "WELCOME TO DOCKER"
     export OS_ICON=🐳
     export PS1="\t \j \\w\$(git branch 2>/dev/null | grep '^*'| colrm 1 2)\\n> "
-    # export PS1_ORIG="\n \[\033[41m\]\[\033[0;31m\]\[\033[0;37m\]\[\033[41m\] $OS_ICON \A \[\033[0m\]\[\033[0;31m\]\[\033[44m\]\[\033[0;34m\]\[\033[44m\]\[\033[0;30m\]\[\033[44m\] \w \[\033[0m\]\[\033[0;34m\] \n \[\033[0;34m\]╰ \[\033[1;36m\]\$ \[\033[0m\]"
-    export PS1="\n\[\033[47m\]\[\033[0;37m\]\[\033[0;30m\]\[\033[47m\] 🐳 \A \[\033[0m\]\[\033[0;37m\]\[\033[44m\]\[\033[0;34m\]\[\033[44m\]\[\033[1;37m\]\[\033[44m\] \j \[\033[0m\]\[\033[0;34m\] \n\[\033[1;35m\]$ \[\033[0m\]"
+    # export PS1_ORIG="\n \[\033[41m\]\[\033[0;31m\]\[\033[0;37m\]\[\033[41m\] $OS_ICON \A \[\033[0m\]\[\033[0;31m\]\[\033[44m\]${PS1_SEP}\[\033[0;34m\]\[\033[44m\]\[\033[0;30m\]\[\033[44m\] \w \[\033[0m\]\[\033[0;34m\]${PS1_SEP} \n \[\033[0;34m\]╰ \[\033[1;36m\]\$ \[\033[0m\]"
+    export PS1="\n\[\033[47m\]\[\033[0;37m\]\[\033[0;30m\]\[\033[47m\] 🐳 \A \[\033[0m\]\[\033[0;37m\]\[\033[44m\]${PS1_SEP}\[\033[0;34m\]\[\033[44m\]\[\033[1;37m\]\[\033[44m\] \j \[\033[0m\]\[\033[0;34m\]${PS1_SEP} \n\[\033[1;35m\]$ \[\033[0m\]"
     export PS1='$(ps1_start "77;77;77" "33;33;255" "77;77;77" "$OS_ICON \t")$(ps1_jobs "77;77;77" "77;77;77" "33;33;255" "🏃 \j")$(ps1_beforelast "33;33;255" "77;77;77" "255;0;0"  "\w")$(ps1_git "33;33;255" "77;77;77" "77;77;77" "$(echo $(git branch 2>/dev/null | grep '^*' | colrm 1 2))")\n$ '
     export PS2="|   "
 elif [[ $(uname) == "Darwin" ]]; then 
-    export OS_ICON=🍎
-    export PS1='$(ps1_start "77;77;77" "33;33;255" "77;77;77" "$OS_ICON \t")$(ps1_jobs "77;77;77" "77;77;77" "33;33;255" "🏃 \j")$(ps1_beforelast "33;33;255" "77;77;77" "255;0;0"  "\w")$(ps1_git "33;33;255" "77;77;77" "77;77;77" "$(echo $(git branch 2>/dev/null | grep '^*' | colrm 1 2))")\n$ '
+    export OS_ICON= #f302
+    lps1_start='$(ps1_start "77;77;77" "33;33;255" "77;77;77" "\t")'
+    lps1_jobs='$(ps1_jobs "77;77;77" "77;77;77" "33;33;255" "  \j")'
+    lps1_mid='$(ps1_beforelast "33;33;255" "77;77;77" "255;0;0"  " \w")'
+    lps1_git='$(ps1_git "33;33;255" "77;77;77" "77;77;77" "$(echo $(git branch 2>/dev/null | grep '^*' | colrm 1 2))")\n$ '
+    export PS1=${lps1_start}${lps1_jobs}${lps1_mid}${lps1_git}
     export PS2="|   "
 else 
-    export OS_ICON=🐧
-    # ⚡ 🐨 🐼 👾 💀 🔘 💥
+    export OS_ICON= #f303
+    # %s+\v\\u([a-f0-9]{4})+\=''.nr2char(str2nr(submatch(1),16)).''+gc
+    #   #f315
+    #   #f17c
+    #   #f418
+    #   #f1d3
+    #   #e708
+    #   #e62e
+    #   #e7b0
+
+    #   #e5fe
+    #   #f0e4
+    #   #f185
+    #   #f1d0
+    #   #f1d0
+    #   #e286
+
+    #   #e0b0
+    #   #e0b1  
+    #   #e0b2
+    #   #e0b2
+    #   #e0b3
+    #   #e0b4
+    #   #e0b5
+    #   #e0b6
+    #   #e0b7
+    #   #e0b8
+    #   #e0b9
+    #   #e0ba
+    #   #e0bb
+    #   #e0bc
+    #   #e0bd
+    #   #e0be
+    #   #e0bf
+    #   #e0c0
+    #   #e0c1
+    #   #e0c2
+    #   #e0c3
+    #   #e0c4
+    #   #e0c5
+    #   #e0c6
+    #   #e0c7
+    #   #e0c8
+    #   #e0ca
+    #   #e0cc
+    #   #e0cd
+    #   #e0ce
+    #   #e0cf
+    #   #e0d0
+    #   #e0d1
+
+    #   #e0d2
+
+    #   #e0d4
+
+    # 🐧 ⚡ 🐨 🐼 👾 💀 🔘 💥
     export PS1='$(ps1_start "77;77;77" "33;33;255" "77;77;77" "$OS_ICON \t")$(ps1_jobs "77;77;77" "77;77;77" "33;33;255" "🏃 \j")$(ps1_beforelast "33;33;255" "77;77;77" "255;0;0"  "\w")$(ps1_git "33;33;255" "77;77;77" "77;77;77" "$(echo $(git branch 2>/dev/null | grep '^*' | colrm 1 2))")\n$ '
     export PS2="|   "
 fi

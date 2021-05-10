@@ -1,5 +1,214 @@
 #!/usr/bin/env bash
 
+export SPLUNK_TMP=~/.splunk
+
+###############################################################################
+# Executes a splunk search and stores in in a json file in ~/.splunk
+# ARGUMENTS:
+#   1. search the query you wish to send to splunk
+#   2. relative time frame you want to search
+# OUTPUTS:
+#   Dumps the json file to stdout
+# RETURN:
+#   0 if print succeeds, non-zero on error.
+###############################################################################
+splunk_search() {
+    if [[ ! -d $SPLUNK_TMP ]]; then 
+        mkdir $SPLUNK_TMP
+    fi
+    local search=$([ -z "${1+x}" ] && echo "*" || echo $1)
+    local reltime=$([ -z "${2+x}" ] && echo "-3h" || echo $2)
+
+    local sid=$(curl -s -u "${SPLUNK_CREDS}" -k -XPOST ${SPLUNK_DEV}/services/search/jobs \
+        -d earliest="${reltime}" \
+        -d output_mode="json" \
+        -d search="search ${search}" | jq -cr '.sid')
+    echo "curl -s -u "${SPLUNK_CREDS}" -k -XPOST ${SPLUNK_DEV}/services/search/jobs \
+        -d earliest="${reltime}" \
+        -d output_mode="json" \
+        -d search="search ${search}" | jq -cr '.sid'"
+    echo $sid
+    # local res=$(curl -s -u "${SPLUNK_CREDS}" -k -XGET ${SPLUNK_DEV}/services/search/jobs/${sid}/results -d output_mode="json" | jq -c '.')
+    # echo "curl -s -u "${SPLUNK_CREDS}" -k -XGET ${SPLUNK_DEV}/services/search/jobs/${sid}/results -d output_mode="json" | jq '.'"
+    sleep 2
+    local results=$(curl -s -u "${SPLUNK_CREDS}" -k -XGET ${SPLUNK_DEV}/services/search/jobs/${sid}/results -d output_mode="json" | jq '.')
+
+    # echo "results: ${results}"
+    # echo "res: ${res}"
+    local outfile="$SPLUNK_TMP/${sid}-$(echo ${search} | gsed 's/ /_/g').json"
+    echo "${results}" | jq '.' > ${outfile}
+    local data=$(jq '.results|map({"log":._raw, "src":.source})' ${outfile})
+    for (( i=0; i < $(echo "${data}" | jq -c '.|length'); ++i )); do
+        local log=$(echo $data | jq -r '.['$i'].log' | gsed '/^$/d')
+        local src=$(echo $data | jq -r '.['$i'].src' | gsed -n -E 's,/var/log/containers/(.*)-deployment.*,\1,p')
+        printf "============================================================================================\n"
+        printf "source = %s\n" "${src}"
+        printf "%s\n" "${log}"
+    done
+    curl -s -u "${SPLUNK_CREDS}" -k -XDELETE ${SPLUNK_DEV}/services/search/jobs/${sid} -d output_mode="json" | jq '.'
+}
+
+splunk_dump() {
+    local outfile="$1"
+    jq '.results|map( {"log":._raw, "src":.source} + 
+      { "k8": .source|gsub("/var/log/containers/(?<ksrc>.*)-deployment.*";"\(.ksrc)")} )' ${outfile}
+}
+splunk_read() {
+    data=${1:-$(</dev/stdin)};
+
+    for (( i=0; i < $(echo "${data}" | jq -c '.|length'); ++i )); do
+        local log=$(echo $data | jq -r '.['$i'].log' | gsed '/^$/d')
+        local src=$(echo $data | jq -r '.['$i'].src' | gsed -n -E 's,/var/log/containers/(.*)-deployment.*,\1,p')
+        printf "============================================================================================\n"
+        printf "source = %s\n" "${src}"
+        printf "%s\n" "${log}"
+    done
+}
+
+
+# dump_builds_failed | jq '.. |= (if type == "string" then .[0:101] else . end) 
+# | map(select(.tenant == "integration")) | (.[].time |= (. / 1000 | strftime("%m-%d-%Y")))
+# | map(select(.version == "7.9.1"))
+
+dump_unique_all(){
+    local pr=${1:-"master"}
+    dump_unique_failed "$pr" | jq '.. |= (if type == "string" then .[0:101] else . end) | map(select(.tenant == "integration")) | (.[].time |= (. / 1000 | strftime("%m-%d-%Y")))' 
+}
+
+tabulate_json_obj() {
+    column -ts $'\t' <(echo $1 | 
+        jq -r 'with_entries(select(.value != "")) |
+            [.] | 
+            (.[0] | keys_unsorted) as $keys | 
+            $keys,  (.[] | [.[$keys[]]]) | 
+            @tsv')
+}
+tabulate_json_array() {
+    jq -r '(map(keys) | add | unique) as $cols | map(. as $row | $cols | map($row[.])) as $rows | $cols, $rows[] | @tsv'
+}
+
+dump_builds_all() {
+    local pr=${1:-"master"}
+    local stub="view/change-requests/"; [[ $pr == "master" ]] && stub="" || stub="view/change-requests/"
+    local builds=$(dump_build_nums | jq -c '.')
+    for (( i=0; i < $(echo "${builds}" | jq -c '.|length'); ++i )); do
+        local job_number=$(echo $builds | jq -r '.['$i']')
+        (dump_parameters "$pr" "$job_number" &)
+    done
+}
+
+dump_builds_failed() {
+    local pr=${1:-"master"}
+    params=$(dump_builds_all "$pr" | jq --slurp '.|map(select(.result == "FAILURE"))'| jq -c '.')
+    for (( i=0; i < $(echo "${params}" | jq -c '.|length'); ++i )); do
+        local job_number=$(echo "${params}" | jq -r '.['$i']|.number')
+        local param="$(echo $params | jq -c '.['$i']')"
+        (dump_failures_summary "$pr" "$job_number" | jq '.|map(.  + ('"${param}"') )' &)
+    done | jq --slurp '.' 
+    
+    # devel=$(echo $params | jq -c '.|map(select(.tenant == "cozy-tuna"))')
+    # integ=$(echo $params | jq -c '.|map(select(.tenant == "integration"))')
+}
+
+dump_unique_failed() {
+    local pr=${1:-"master"}
+    dump_builds_failed "$pr" | jq 'flatten|group_by(.name)|map(.|group_by(.failure))|map(.|map(first))|flatten'
+}
+
+dump_builds() {
+    local pr=${1:-"master"}
+    local stub="view/change-requests/"; [[ $pr == "master" ]] && stub="" || stub="view/change-requests/"
+    curl -s -XGET -L \
+        "${JENKINS_API}/job/core/job/accounts-nrt/job/authn-api-nrt/${stub}job/${pr}/api/json" \
+        --user "${JENKINS_EMAIL}:${JENKINS_API_KEY}"
+}
+dump_build_nums() {
+    local pr=${1:-"master"}
+    local job_number=${2:-"1289"}
+    local stub="view/change-requests/"; [[ $pr == "master" ]] && stub="" || stub="view/change-requests/"
+    curl -s -XGET -L \
+        "${JENKINS_API}/job/core/job/accounts-nrt/job/authn-api-nrt/${stub}job/${pr}/api/json" \
+        --user "${JENKINS_EMAIL}:${JENKINS_API_KEY}" | jq '.builds|map(.number)'
+}
+
+dump_parameters() {
+    local pr=${1:-"master"}
+    local job_number=${2:-"1289"}
+    local stub="view/change-requests/"; [[ $pr == "master" ]] && stub="" # || stub="view/change-requests/"
+    curl -s -XGET -L \
+        "${JENKINS_API}/job/core/job/accounts-nrt/job/authn-api-nrt/${stub}job/${pr}/${job_number}/api/json" \
+        --user "${JENKINS_EMAIL}:${JENKINS_API_KEY}" |
+        jq '(
+                .actions |
+                map(.|select(.parameters? != null))[0] |
+                .parameters |
+                map({(.name):.value}) |
+                add
+            ) + 
+            {"result":.result, "number":"'${job_number}'", "pr": "'${pr}'", "time":.timestamp} |
+            with_entries(select(.value != ""))'
+}
+
+dump_failures() {
+    local pr=${1:-"master"}
+    local job_number=${2:-"1289"}
+    local stub="view/change-requests/"; [[ $pr == "master" ]] && stub="" # || stub="view/change-requests/"
+    curl -s -XGET -L \
+        "${JENKINS_API}/job/core/job/accounts-nrt/job/authn-api-nrt/${stub}job/${pr}/${job_number}/artifact/nrt-report/nrt.json" \
+        --user "vito.cutten@rallyhealth.com:${JENKINS_API_KEY}" | jq '.'
+}
+
+dump_failures_summary() {
+    local pr=${1:-"master"}
+    local job_number=${2:-"1289"}
+    dump_failures "$pr" "$job_number" |
+        jq '.|map(select(.result == "failed"))|map({"name":.suite.name,"failure":.failureCause, "cid":.context.correlationId})'
+}
+
+dump_failures_table() {
+    local pr=${1:-"master"}
+    local job_number=${2:-"1289"}
+    local failures="$(dump_failures_summary "${pr}" "${job_number}" | jq -c '.')"
+    # ["Header 1", "Header 2"]
+    
+    for (( i=0; i < $(echo "${failures}" | jq -c '.|length'); ++i )); do
+        name=$(echo $failures | jq -r '.['$i'].name')
+        failure=$(echo $failures | jq -r '.['$i'].failure')
+        cid=$(echo $failures | jq -r '.['$i'].cid')
+        printf "%s\t%s\t%s\n" "$name" "$failure" "$cid"
+    done
+}
+
+dump_failures_output() {
+    local pr=${1:-"master"}
+    local job_number=${2:-"1289"}
+    local failures="$(dump_failures_summary "${pr}" "${job_number}" | jq -c '.')"
+    
+    for (( i=0; i < $(echo "${failures}" | jq -c '.|length'); ++i )); do
+        name=$(echo $failures | jq -r '.['$i'].name')
+        failure=$(echo $failures | jq -r '.['$i'].failure')
+        cid=$(echo $failures | jq -r '.['$i'].cid')
+        printf "%s\t%s\t%s\n" "$name" "$failure" "$cid"
+    done
+}
+
+# docker_wire() {
+#     if [ -z ${CONFIG} ]; then
+#         printf "FAILURE: the CONFIG env is empty or not set\n" >&2;
+#         exit 1;
+#     fi
+#
+#     service=( $(jq -r '.services|map(.container_name)[]' ${CONFIG}) );
+#     for ((i=0;i<${#service[@]};++i)); do
+#         for ((j=0; j < $(jq '.services['$i'].machine.ports|length' ${CONFIG}); ++j )); do
+#             port=$(jq -r '.services['$i'].machine.ports['$j']' ${CONFIG});
+#             vm=$(jq -r '.services['$i'].machine.name' ${CONFIG});
+#             _unmap_port $vm ${service[$i]} &> /dev/null
+#             _map_port $vm ${service[$i]} $port
+#         done
+#     done;
+# }
+
 # this is in the root bashrc
 export CODE_CONFIGS=$HOME/code/configs
 

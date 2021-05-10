@@ -10,11 +10,10 @@ RUN pacman -Sy --noconfirm kubectl go fzf bat bash-completion
 RUN pacman -Sy --noconfirm yarn fd ctags
 RUN pacman -Sy --noconfirm python python-pip
 RUN pacman -Sy --noconfirm postgresql
-RUN pacman -Sc --noconfirm
 RUN mkdir -p ~/code/configs
 RUN mkdir -p ~/.config
-RUN python3 -m pip install --upgrade pynvim
-
+RUN pacman -Sy --noconfirm glibc
+RUN python3 -m pip install --upgrade pynvim 
 ADD https://api.github.com/repos/vito-c/pirate-setup/git/refs/heads/master version.json
 RUN git clone -b master https://$GITHUB_USER:$GITHUB_TOKEN@github.com/vito-c/pirate-setup ~/code/configs/pirate-setup
 
@@ -39,6 +38,10 @@ ENV HOSTNAME=dorker
 
 RUN nvim -u ~/code/configs/pirate-vim/rc/vimrc-plugins +PlugInstall +qall || true
 RUN cd ~/code/configs/pirate-vim/bundle/coc.nvim && yarn install --frozen-lockfile && mkdir -p ~/.config/coc
+COPY k8start /k8start
+RUN chmod +x k8start
+# RUN nvim +call coc#util#install() &> /dev/null 
+# RUN nvim +call CocInstall coc-metals &> /dev/null
 
 # RUN /bin/bash -c nvim +PlugInstall +qall
 # RUN ["/bin/bash", "-c", "nvim +PlugInstall +qall &> /dev/null"]
