@@ -4,10 +4,10 @@ if [[ -z "${COMPLETIONS_LOADED+x}" ]]; then
 fi
 if [[ $(uname) =~ Darwin && $COMPLETIONS_LOADED == "0" ]]; then
     export COMPLETIONS_LOADED="1"
+    [[ -r "/usr/local/etc/profile.d/bash_completion.sh" ]] && . "/usr/local/etc/profile.d/bash_completion.sh"
+
     if hash brew 2>/dev/null; then
-        for completion_file in $(brew --prefix)/etc/bash_completion.d/*; do
-            source "$completion_file"
-        done
+        echo "has brew"
         if [[ -f $(brew --prefix)/share/bash-completion/bash_completion ]]; then
             source $(brew --prefix)/share/bash-completion/bash_completion;
             for completion_file in $(brew --prefix)/share/bash-completion/completions/*; do
@@ -15,6 +15,10 @@ if [[ $(uname) =~ Darwin && $COMPLETIONS_LOADED == "0" ]]; then
             done
 
         fi
+        echo "=================================================="
+        for completion_file in $(brew --prefix)/etc/bash_completion.d/*; do
+            source "$completion_file"
+        done
         # if [[ -f $(brew --prefix)/etc/bash_completion ]]; then
         #     . $(brew --prefix)/etc/bash_completion
         # fi
